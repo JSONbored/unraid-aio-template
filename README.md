@@ -65,6 +65,7 @@ Every repo created from this template should aim for:
 - advanced knobs exposed but hidden behind Unraid advanced settings
 - repeatable smoke tests before publish
 - pinned or current official Actions, minimal token permissions, and protected `main`
+- enough README proof and screenshots that the repo works as a trust asset, not just a code host
 
 ## Release Checklist
 

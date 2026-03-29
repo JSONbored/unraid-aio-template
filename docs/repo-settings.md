@@ -7,6 +7,8 @@ Apply these to every derived repo.
 - Keep the repo private until the container, docs, and Actions are validated
 - Enable Issues and Discussions only if you plan to support them
 - Disable Wikis and Projects unless you actively use them
+- Add a social preview image before the repo goes public
+- Set a clear About description and relevant GitHub topics
 
 ## Branch Protection
 

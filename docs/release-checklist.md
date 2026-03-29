@@ -7,6 +7,8 @@
 - rename `template-aio.xml`
 - confirm README, SECURITY, and FUNDING are accurate
 - confirm `Support`, `Project`, `TemplateURL`, and `Icon` URLs are correct
+- add a screenshot or demo visual if the app has a UI
+- set the repo About description, topics, and social preview image
 
 ## Before Enabling Actions
 
