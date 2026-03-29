@@ -1,3 +1,5 @@
-# Replace these with the maintainer funding destinations for the derived repo.
+# Set real maintainer funding destinations for the derived repo before public launch.
+# Remove any empty providers you do not use.
 github: []
 ko_fi:
+custom: []

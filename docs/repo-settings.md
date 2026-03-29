@@ -1,6 +1,6 @@
 # Recommended GitHub Settings
 
-Apply these to every derived repo.
+Apply these to every derived repo before it becomes public.
 
 ## General
 
@@ -9,6 +9,8 @@ Apply these to every derived repo.
 - Disable Wikis and Projects unless you actively use them
 - Add a social preview image before the repo goes public
 - Set a clear About description and relevant GitHub topics
+- Mark the GHCR package public only after the first successful publish
+- Make sure the repo description clearly reflects the wrapped upstream app
 
 ## Branch Protection
 
@@ -24,6 +26,7 @@ Create a ruleset for `main`:
 
 Suggested required checks:
 
+- `validate-template`
 - `smoke-test`
 
 ## Actions
@@ -32,15 +35,18 @@ Suggested required checks:
 - Enable `Allow GitHub Actions to create and approve pull requests` only if you explicitly want that
 - Prefer `Allow select actions and reusable workflows`
 - Allow GitHub-authored actions and verified creators
+- Keep default `GITHUB_TOKEN` permissions minimal and only elevate inside jobs that publish
+- Keep manual dispatch enabled so you can re-run validation or a controlled publish without making a noop commit
+- Keep scheduled workflows enabled so upstream monitoring can run automatically
 
 ## Security
 
-- Enable Dependabot alerts
-- Enable Dependabot security updates
+- Enable the dependency graph and GitHub vulnerability alerts
 - Enable secret scanning
 - Enable push protection
 - Enable private vulnerability reporting
 - Enable code scanning later if you add a relevant analyzer
+- Use Renovate for update PRs instead of Dependabot update PRs
 
 ## Packages
 
@@ -65,3 +71,20 @@ Optional variables:
 Required secret:
 
 - `SYNC_TOKEN`
+
+## Maintenance
+
+- install the Renovate GitHub App on each derived repo
+- let Renovate manage pinned GitHub Action SHAs and Docker dependency updates
+- review Renovate PRs manually before merging
+
+## Derived Repo Checks Before Enabling Automation
+
+- `template-aio.xml` has been renamed
+- placeholder upstream image is gone
+- upstream version is pinned explicitly instead of relying on a floating stable tag
+- smoke test uses the real ready log line and real HTTP endpoint
+- README no longer contains placeholder language
+- XML points at the correct repo, icon, and support URLs
+- `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .` passes locally
+- `upstream.toml` matches the real upstream app and update strategy
