@@ -7,7 +7,7 @@ Before enabling automation for a derived repo:
 - replace all placeholder values
 - run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
 - verify the smoke test matches the actual container behavior
-- set the required Actions variables and `SYNC_TOKEN`
+- set `ENABLE_AIO_AUTOMATION=true` and add `SYNC_TOKEN`
 - install Renovate for ongoing updates
 - configure upstream monitoring
 - confirm GHCR package visibility after first publish
