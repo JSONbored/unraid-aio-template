@@ -27,7 +27,8 @@ Create a ruleset for `main`:
 Suggested required checks:
 
 - `validate-template`
-- `smoke-test`
+- `pinned-actions`
+- `dependency-review`
 
 ## Actions
 

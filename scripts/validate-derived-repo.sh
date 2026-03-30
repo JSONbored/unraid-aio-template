@@ -31,6 +31,14 @@ check_no_placeholder() {
 require_file "Dockerfile"
 require_file "README.md"
 require_file "scripts/smoke-test.sh"
+require_file ".github/FUNDING.yml"
+require_file "SECURITY.md"
+require_file ".github/pull_request_template.md"
+require_file ".github/ISSUE_TEMPLATE/bug_report.yml"
+require_file ".github/ISSUE_TEMPLATE/feature_request.yml"
+require_file ".github/ISSUE_TEMPLATE/installation_help.yml"
+require_file ".github/ISSUE_TEMPLATE/config.yml"
+require_absent ".github/CODEOWNERS"
 
 if [ "${ENABLE_AIO_AUTOMATION:-}" = "true" ]; then
     [ -n "${TEMPLATE_XML:-}" ] || fail "ENABLE_AIO_AUTOMATION=true requires TEMPLATE_XML"

@@ -21,7 +21,7 @@
 - add `SYNC_TOKEN`
 - confirm Renovate is installed for the repo
 - verify branch protection and secret scanning are enabled
-- confirm `validate-template` passes before expecting `smoke-test` or `publish`
+- confirm `validate-template` passes on PRs before expecting `smoke-test` only on `main` or explicit manual dispatch
 
 ## Before Unraid Submission
 
