@@ -16,7 +16,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 - reusable smoke test at [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
 - derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
 - upstream monitor scaffold at [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
-- GitHub Actions for validation, smoke-test, GHCR publish, security checks, and optional `awesome-unraid` sync
+- GitHub Actions for validation, main-branch smoke-test, GHCR publish, security checks, and optional `awesome-unraid` sync
 - starter docs, changelog, funding, issue templates, and security policy
 - public repo checklists under [`docs/`](/tmp/unraid-aio-template/docs)
 
@@ -35,7 +35,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 
 1. Create a new private repo from this template.
 2. Rename `template-aio.xml` to the final app slug, for example `myapp-aio.xml`.
-3. Replace placeholders in the Dockerfile, XML, rootfs scripts, smoke test, README, and funding file.
+3. Replace placeholders in the Dockerfile, XML, rootfs scripts, smoke test, README, funding file, and security policy.
 4. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png) with the real icon.
 5. Follow [`docs/customization-guide.md`](/tmp/unraid-aio-template/docs/customization-guide.md).
 6. Follow [`docs/repo-settings.md`](/tmp/unraid-aio-template/docs/repo-settings.md).
@@ -75,6 +75,7 @@ Optional:
 - [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run)
 - [`README.md`](/tmp/unraid-aio-template/README.md)
 - [`.github/FUNDING.yml`](/tmp/unraid-aio-template/.github/FUNDING.yml)
+- [`SECURITY.md`](/tmp/unraid-aio-template/SECURITY.md)
 - [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
 
 ## Validation Flow

@@ -1,5 +1,3 @@
-# Set real maintainer funding destinations for the derived repo before public launch.
-# Remove any empty providers you do not use.
-github: []
-ko_fi:
-custom: []
+github:
+  - JSONbored
+ko_fi: jsonbored

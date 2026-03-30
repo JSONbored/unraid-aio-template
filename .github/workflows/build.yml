@@ -24,7 +24,7 @@ on:
       run_smoke_test:
         description: "Run the smoke-test job"
         required: false
-        default: true
+        default: false
         type: boolean
       publish_image:
         description: "Publish image tags from the current ref"
@@ -81,7 +81,7 @@ jobs:
           ./scripts/validate-derived-repo.sh .
 
   smoke-test:
-    if: ${{ vars.ENABLE_AIO_AUTOMATION == 'true' && (github.event_name != 'workflow_dispatch' || inputs.run_smoke_test == true) }}
+    if: ${{ vars.ENABLE_AIO_AUTOMATION == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.run_smoke_test == true)) }}
     needs: validate-template
     runs-on: ubuntu-latest
     permissions:
