@@ -240,13 +240,13 @@ jobs:
     permissions:
       contents: read
     env:
-      TEMPLATE_XML: ${{ vars.TEMPLATE_XML }}
+      TEMPLATE_XML: ${{ vars.TEMPLATE_XML || format('{0}.xml', github.event.repository.name) }}
       TEMPLATE_ICON_PATH: ${{ vars.TEMPLATE_ICON_PATH || 'assets/app-icon.png' }}
-      TARGET_REPOSITORY: ${{ vars.AWESOME_UNRAID_REPOSITORY }}
-      TARGET_XML_NAME: ${{ vars.AWESOME_UNRAID_XML_NAME }}
-      TARGET_ICON_NAME: ${{ vars.AWESOME_UNRAID_ICON_NAME }}
+      TARGET_REPOSITORY: ${{ vars.AWESOME_UNRAID_REPOSITORY || 'JSONbored/awesome-unraid' }}
+      TARGET_XML_NAME: ${{ vars.AWESOME_UNRAID_XML_NAME || format('{0}.xml', github.event.repository.name) }}
+      TARGET_ICON_NAME: ${{ vars.AWESOME_UNRAID_ICON_NAME || '' }}
     steps:
-      - name: Verify sync token is present
+      - name: Verify sync configuration
         id: token
         env:
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
@@ -273,6 +273,11 @@ jobs:
       - name: Copy and Commit Template
         if: ${{ steps.token.outputs.enabled == 'true' }}
         run: |
+          if [[ -z "${TARGET_ICON_NAME}" && -f "${TEMPLATE_ICON_PATH}" ]]; then
+            stem="${TARGET_XML_NAME%.xml}"
+            stem="${stem%-aio}"
+            TARGET_ICON_NAME="${stem}.png"
+          fi
           cp "${TEMPLATE_XML}" "target-repo/${TARGET_XML_NAME}"
           mkdir -p target-repo/icons
           if [[ -n "${TARGET_ICON_NAME}" && -f "${TEMPLATE_ICON_PATH}" ]]; then

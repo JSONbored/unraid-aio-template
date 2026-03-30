@@ -46,18 +46,25 @@ This template is opinionated on purpose. It is built for repos that should be:
 
 ## Required Actions Variables
 
-Set these in `Settings -> Secrets and variables -> Actions -> Variables`.
+Only one Actions variable is required for the default JSONbored workflow:
 
 - `ENABLE_AIO_AUTOMATION=true`
+
+Optional overrides:
+
+- `IMAGE_NAME_OVERRIDE=jsonbored/yourapp-aio`
 - `TEMPLATE_XML=yourapp-aio.xml`
 - `AWESOME_UNRAID_REPOSITORY=JSONbored/awesome-unraid`
 - `AWESOME_UNRAID_XML_NAME=yourapp-aio.xml`
 - `AWESOME_UNRAID_ICON_NAME=yourapp.png`
-
-Optional:
-
-- `IMAGE_NAME_OVERRIDE=jsonbored/yourapp-aio`
 - `TEMPLATE_ICON_PATH=assets/app-icon.png`
+
+If you do not set the optional sync overrides, the workflow defaults to:
+
+- target repo: `JSONbored/awesome-unraid`
+- XML name: `<repo-name>.xml`
+- icon path: `assets/app-icon.png`
+- icon name: derived from the XML name, for example `yourapp-aio.xml -> yourapp.png`
 
 ## Required Actions Secret
 
@@ -88,7 +95,7 @@ Derived repos created from this template should follow this order:
 4. local smoke test
 5. enable automation
 6. CI validation and publish
-7. `awesome-unraid` sync
+7. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
 8. real Unraid install validation
 
 Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklist.md) before making a derived repo public or submitting it to CA.
