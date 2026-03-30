@@ -56,22 +56,30 @@ Suggested required checks:
 
 ## Secrets and Variables
 
-Required variables:
+Required variable:
 
 - `ENABLE_AIO_AUTOMATION=true`
-- `TEMPLATE_XML`
-- `AWESOME_UNRAID_REPOSITORY`
-- `AWESOME_UNRAID_XML_NAME`
-- `AWESOME_UNRAID_ICON_NAME`
 
 Optional variables:
 
 - `IMAGE_NAME_OVERRIDE`
+- `TEMPLATE_XML`
+- `AWESOME_UNRAID_REPOSITORY`
+- `AWESOME_UNRAID_XML_NAME`
+- `AWESOME_UNRAID_ICON_NAME`
 - `TEMPLATE_ICON_PATH`
 
 Required secret:
 
 - `SYNC_TOKEN`
+
+Default sync behavior without overrides:
+
+- XML source: `<repo-name>.xml`
+- awesome-unraid target repo: `JSONbored/awesome-unraid`
+- target XML name: `<repo-name>.xml`
+- target icon path source: `assets/app-icon.png`
+- target icon name: derived from the XML name, for example `yourapp-aio.xml -> yourapp.png`
 
 ## Maintenance
 

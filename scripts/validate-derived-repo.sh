@@ -40,9 +40,23 @@ require_file ".github/ISSUE_TEMPLATE/installation_help.yml"
 require_file ".github/ISSUE_TEMPLATE/config.yml"
 require_absent ".github/CODEOWNERS"
 
+effective_template_xml="${TEMPLATE_XML:-}"
+if [ -z "${effective_template_xml}" ]; then
+    repo_name="$(basename "$(pwd)")"
+    inferred_repo_xml="${repo_name}.xml"
+    if [ -f "${inferred_repo_xml}" ]; then
+        effective_template_xml="${inferred_repo_xml}"
+    else
+        mapfile -t root_xml_files < <(find . -maxdepth 1 -type f -name '*.xml' -print | sort)
+        if [ "${#root_xml_files[@]}" -eq 1 ]; then
+            effective_template_xml="${root_xml_files[0]#./}"
+        fi
+    fi
+fi
+
 if [ "${ENABLE_AIO_AUTOMATION:-}" = "true" ]; then
-    [ -n "${TEMPLATE_XML:-}" ] || fail "ENABLE_AIO_AUTOMATION=true requires TEMPLATE_XML"
-    require_file "${TEMPLATE_XML}"
+    [ -n "${effective_template_xml}" ] || fail "ENABLE_AIO_AUTOMATION=true requires a root XML file"
+    require_file "${effective_template_xml}"
     require_absent "template-aio.xml"
 fi
 
@@ -52,8 +66,8 @@ critical_files=(
 )
 
 xml_files=()
-if [ -n "${TEMPLATE_XML:-}" ] && [ -f "${TEMPLATE_XML}" ]; then
-    xml_files+=("${TEMPLATE_XML}")
+if [ -n "${effective_template_xml}" ] && [ -f "${effective_template_xml}" ]; then
+    xml_files+=("${effective_template_xml}")
 fi
 
 if [ "${strict_placeholders}" = "true" ]; then
@@ -64,12 +78,6 @@ if [ "${strict_placeholders}" = "true" ]; then
     fi
     check_no_placeholder "replace me with the app ready log line" "scripts/smoke-test.sh"
     check_no_placeholder "Replace this starter service with the real app start command." rootfs/etc/services.d/app/run
-fi
-
-if [ "${ENABLE_AIO_AUTOMATION:-}" = "true" ]; then
-    [ -n "${AWESOME_UNRAID_REPOSITORY:-}" ] || fail "missing AWESOME_UNRAID_REPOSITORY"
-    [ -n "${AWESOME_UNRAID_XML_NAME:-}" ] || fail "missing AWESOME_UNRAID_XML_NAME"
-    [ -n "${AWESOME_UNRAID_ICON_NAME:-}" ] || fail "missing AWESOME_UNRAID_ICON_NAME"
 fi
 
 echo "Derived repo validation passed."
