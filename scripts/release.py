@@ -49,6 +49,11 @@ def commits_since(ref: str | None) -> Iterable[str]:
     return [line.strip() for line in output.splitlines() if line.strip()]
 
 
+def has_unreleased_changes() -> bool:
+    latest = latest_semver_tag()
+    return any(commits_since(latest))
+
+
 def next_release_version() -> str:
     latest = latest_semver_tag()
     if latest is None:
@@ -113,6 +118,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("next-version")
+    subparsers.add_parser("has-unreleased-changes")
 
     latest_parser = subparsers.add_parser("latest-changelog-version")
     latest_parser.add_argument("--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG)
@@ -125,6 +131,9 @@ def main() -> None:
 
     if args.command == "next-version":
         print(next_release_version())
+        return
+    if args.command == "has-unreleased-changes":
+        print("true" if has_unreleased_changes() else "false")
         return
     if args.command == "latest-changelog-version":
         print(latest_changelog_version(args.changelog))
