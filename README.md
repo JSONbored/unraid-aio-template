@@ -104,6 +104,12 @@ Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklis
 
 Use [`docs/upstream-tracking.md`](/tmp/unraid-aio-template/docs/upstream-tracking.md) to wire the derived repo to the stable upstream app it wraps.
 
+## Releases
+
+This template should use normal semver releases such as `v0.1.0`, not upstream-aligned app versions.
+
+See [`docs/releases.md`](/tmp/unraid-aio-template/docs/releases.md) for the protected-branch-safe release workflow and changelog process.
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=JSONbored/unraid-aio-template&type=date&legend=top-left)](https://www.star-history.com/#JSONbored/unraid-aio-template&Date)
