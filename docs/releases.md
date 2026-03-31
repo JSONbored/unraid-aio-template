@@ -16,8 +16,8 @@ A template release is a versioned milestone for the scaffolding itself, includin
 
 ## Release flow
 
-1. Trigger the **Release / Template** workflow from `main`.
-2. The workflow computes the next semver version with `git-cliff --bumped-version`.
-3. It opens a release PR that updates `CHANGELOG.md`.
-4. Merge that PR into `main`.
-5. After merge, the workflow creates the Git tag and GitHub Release automatically.
+1. Trigger **Release / Template** from `main` with `action=prepare`.
+2. The workflow computes the next semver version and opens a release PR that updates `CHANGELOG.md`.
+3. Review and merge that PR into `main`.
+4. Trigger **Release / Template** from `main` again with `action=publish`.
+5. The workflow reads the merged `CHANGELOG.md` entry, creates the Git tag, and publishes the GitHub Release.
