@@ -41,6 +41,10 @@ def latest_semver_tag() -> str | None:
     return tags[-1][1]
 
 
+def latest_release_tag() -> str | None:
+    return latest_semver_tag()
+
+
 def commits_since(ref: str | None) -> Iterable[str]:
     args = ["log", "--format=%s"]
     if ref:
@@ -113,12 +117,31 @@ def extract_release_notes(version: str, changelog: pathlib.Path) -> str:
     return notes
 
 
+def find_release_commit(version: str) -> str:
+    exact = f"chore(release): {version}"
+    with_suffix = re.compile(rf"^{re.escape(exact)} \(#\d+\)$")
+
+    output = git("log", "--format=%H\t%s", "HEAD")
+    for line in output.splitlines():
+        if not line.strip():
+            continue
+        sha, subject = line.split("\t", 1)
+        if subject == exact or with_suffix.match(subject):
+            return sha
+
+    raise SystemExit(
+        f"Unable to find a merged release commit for {version} on main. "
+        f"Expected '{exact}' or '{exact} (#123)'."
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Release helpers for semver-based repos.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("next-version")
     subparsers.add_parser("has-unreleased-changes")
+    subparsers.add_parser("latest-release-tag")
 
     latest_parser = subparsers.add_parser("latest-changelog-version")
     latest_parser.add_argument("--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG)
@@ -126,6 +149,9 @@ def main() -> None:
     notes_parser = subparsers.add_parser("extract-release-notes")
     notes_parser.add_argument("version")
     notes_parser.add_argument("--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG)
+
+    commit_parser = subparsers.add_parser("find-release-commit")
+    commit_parser.add_argument("version")
 
     args = parser.parse_args()
 
@@ -135,11 +161,19 @@ def main() -> None:
     if args.command == "has-unreleased-changes":
         print("true" if has_unreleased_changes() else "false")
         return
+    if args.command == "latest-release-tag":
+        latest_tag = latest_release_tag()
+        if latest_tag:
+            print(latest_tag)
+        return
     if args.command == "latest-changelog-version":
         print(latest_changelog_version(args.changelog))
         return
     if args.command == "extract-release-notes":
         print(extract_release_notes(args.version, args.changelog))
+        return
+    if args.command == "find-release-commit":
+        print(find_release_commit(args.version))
         return
 
     raise SystemExit(f"Unknown command: {args.command}")

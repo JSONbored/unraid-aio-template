@@ -31,6 +31,10 @@ check_no_placeholder() {
 require_file "Dockerfile"
 require_file "README.md"
 require_file "scripts/smoke-test.sh"
+require_file "scripts/ci_flags.py"
+require_file "scripts/test-ci-flags.py"
+require_file "scripts/validate-template.py"
+require_file "scripts/update-template-changes.py"
 require_file ".github/FUNDING.yml"
 require_file "SECURITY.md"
 require_file ".github/pull_request_template.md"
@@ -38,6 +42,7 @@ require_file ".github/ISSUE_TEMPLATE/bug_report.yml"
 require_file ".github/ISSUE_TEMPLATE/feature_request.yml"
 require_file ".github/ISSUE_TEMPLATE/installation_help.yml"
 require_file ".github/ISSUE_TEMPLATE/config.yml"
+require_file "renovate.json"
 require_absent ".github/CODEOWNERS"
 
 effective_template_xml="${TEMPLATE_XML:-}"
@@ -47,9 +52,12 @@ if [ -z "${effective_template_xml}" ]; then
     if [ -f "${inferred_repo_xml}" ]; then
         effective_template_xml="${inferred_repo_xml}"
     else
-        mapfile -t root_xml_files < <(find . -maxdepth 1 -type f -name '*.xml' -print | sort)
+        root_xml_files=()
+        while IFS= read -r xml_path; do
+            root_xml_files+=("${xml_path#./}")
+        done < <(find . -maxdepth 1 -type f -name '*.xml' -print | sort)
         if [ "${#root_xml_files[@]}" -eq 1 ]; then
-            effective_template_xml="${root_xml_files[0]#./}"
+            effective_template_xml="${root_xml_files[0]}"
         fi
     fi
 fi
@@ -75,6 +83,9 @@ if [ "${strict_placeholders}" = "true" ]; then
     if [ ${#xml_files[@]} -gt 0 ]; then
         check_no_placeholder "yourapp-aio" "${xml_files[@]}"
         check_no_placeholder "Replace this overview with the real app description and first-run guidance." "${xml_files[@]}"
+        check_no_placeholder "replace-with-real-search-terms" "${xml_files[@]}"
+        check_no_placeholder "Replace this with any real operational prerequisites or remove it." "${xml_files[@]}"
+        check_no_placeholder "https://github.com/JSONbored/yourapp-aio/releases" "${xml_files[@]}"
     fi
     check_no_placeholder "replace me with the app ready log line" "scripts/smoke-test.sh"
     check_no_placeholder "Replace this starter service with the real app start command." rootfs/etc/services.d/app/run

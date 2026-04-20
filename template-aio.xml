@@ -10,16 +10,22 @@
   <Support>https://github.com/JSONbored/yourapp-aio/issues</Support>
   <Project>https://github.com/JSONbored/yourapp-aio</Project>
   <Overview>Replace this overview with the real app description and first-run guidance.</Overview>
+  <Changes>[b]Latest release[/b]&#xD;
+- Replace this block with release notes generated from CHANGELOG.md.&#xD;
+&#xD;
+Full changelog and release notes: [url=https://github.com/JSONbored/yourapp-aio/releases]GitHub Releases[/url]</Changes>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/yourapp-aio.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/icons/yourapp.png</Icon>
+  <ExtraSearchTerms>replace-with-real-search-terms</ExtraSearchTerms>
+  <Requires>Replace this with any real operational prerequisites or remove it.</Requires>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
   <DateInstalled/>
-  <DonateText/>
-  <DonateLink/>
+  <DonateText>Support JSONbored on GitHub Sponsors.</DonateText>
+  <DonateLink>https://github.com/sponsors/JSONbored</DonateLink>
   <Description/>
   <Networking>
     <Mode>bridge</Mode>

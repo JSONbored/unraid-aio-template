@@ -33,6 +33,29 @@ That means the repo:
 - `github-release`
 - `ghcr-container-tag`
 
+## Optional Digest Pinning
+
+When the wrapped upstream publishes immutable image manifests, you can track both the human version and the exact image digest. This is the right fit for repos that pin `FROM upstream-image:<tag>@sha256:<digest>` and want upstream-monitor PRs to catch digest-only refreshes too.
+
+Example:
+
+```toml
+[upstream]
+name = "Infisical"
+type = "github-release"
+repo = "Infisical/infisical"
+image = "infisical/infisical"
+version_source = "dockerfile-arg"
+version_key = "UPSTREAM_VERSION"
+digest_source = "dockerhub-manifest"
+digest_key = "UPSTREAM_IMAGE_DIGEST"
+strategy = "pr"
+stable_only = true
+
+[notifications]
+release_notes_url = "https://github.com/Infisical/infisical/releases"
+```
+
 ## Example
 
 ```toml

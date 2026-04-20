@@ -14,9 +14,12 @@ This template is opinionated on purpose. It is built for repos that should be:
 - starter [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile) for wrapping an upstream image with `s6-overlay`
 - starter CA XML at [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - reusable smoke test at [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
+- generic XML validator at [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
+- CI gate helper and tests at [`scripts/ci_flags.py`](/tmp/unraid-aio-template/scripts/ci_flags.py) and [`scripts/test-ci-flags.py`](/tmp/unraid-aio-template/scripts/test-ci-flags.py)
+- changelog-to-XML sync helper at [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
 - upstream monitor scaffold at [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
-- GitHub Actions for validation, main-branch smoke-test, GHCR publish, security checks, and optional `awesome-unraid` sync
+- GitHub Actions for validation, manual heavy-job gating, main-branch smoke-test/publish, security checks, and optional `awesome-unraid` sync
 - starter docs, changelog, funding, issue templates, and security policy
 - public repo checklists under [`docs/`](/tmp/unraid-aio-template/docs)
 
@@ -28,6 +31,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 - no publish until placeholders are gone and smoke tests pass
 - pinned workflow action SHAs and Renovate-managed dependency updates
 - stable-only upstream tracking with PR-first updates
+- optional upstream image digest tracking for repos that pin immutable manifests
 - update automation opens PRs, but merge decisions stay manual
 - public repos stay public-facing and product-facing only
 
@@ -43,6 +47,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 8. When ready, set `ENABLE_AIO_AUTOMATION=true` and let CI publish and sync.
 9. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
 10. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
+11. Replace the placeholder `<Changes>` block and then let release automation keep it in sync from `CHANGELOG.md`.
 
 ## Required Actions Variables
 
@@ -78,6 +83,8 @@ If you do not set the optional sync overrides, the workflow defaults to:
 - [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile)
 - [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
+- [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
+- [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
 - [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run)
 - [`README.md`](/tmp/unraid-aio-template/README.md)
@@ -91,12 +98,13 @@ Derived repos created from this template should follow this order:
 
 1. local placeholder cleanup
 2. `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
-3. local image build
-4. local smoke test
-5. enable automation
-6. CI validation and publish
-7. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
-8. real Unraid install validation
+3. `python3 scripts/validate-template.py`
+4. local image build
+5. local smoke test
+6. enable automation
+7. CI validation and publish
+8. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
+9. real Unraid install validation
 
 Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklist.md) before making a derived repo public or submitting it to CA.
 
