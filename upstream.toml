@@ -6,6 +6,10 @@ version_source = "dockerfile-arg"
 version_key = "UPSTREAM_VERSION"
 strategy = "pr"
 stable_only = true
+# Optional digest pinning for registries that publish immutable image digests.
+# digest_source = "dockerhub-manifest"
+# digest_key = "UPSTREAM_IMAGE_DIGEST"
+# image = "owner/image"
 
 [notifications]
 release_notes_url = ""

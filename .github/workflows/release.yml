@@ -12,6 +12,9 @@ on:
           - prepare
           - publish
 
+permissions:
+  contents: read
+
 jobs:
   prepare-release:
     if: ${{ github.event.inputs.action == 'prepare' && github.ref == 'refs/heads/main' }}
@@ -34,6 +37,7 @@ jobs:
           curl -fsSL -o "/tmp/${archive}" "https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}/${archive}"
           tar -xzf "/tmp/${archive}" -C /tmp
           install "/tmp/git-cliff-${GIT_CLIFF_VERSION}/git-cliff" /usr/local/bin/git-cliff
+          git-cliff --version
 
       - name: Check for unreleased changes
         id: changes
@@ -55,8 +59,8 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
         run: |
           previous_tag="$(python3 scripts/release.py latest-release-tag)"
-          if [[ -n "${previous_tag}" ]]; then
-            git-cliff --config cliff.toml --tag "${RELEASE_VERSION}" "${previous_tag}..HEAD" --output CHANGELOG.md
+          if [[ -f CHANGELOG.md && -n "${previous_tag}" ]]; then
+            git-cliff --config cliff.toml --tag "${RELEASE_VERSION}" "${previous_tag}..HEAD" --prepend CHANGELOG.md
           else
             git-cliff --config cliff.toml --tag "${RELEASE_VERSION}" --output CHANGELOG.md
           fi
@@ -66,9 +70,16 @@ jobs:
             exit 1
           fi
 
+      - name: Sync template Changes from changelog
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
+        run: |
+          python3 scripts/update-template-changes.py "${RELEASE_VERSION}"
+
       - name: Create release PR
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           commit-message: "chore(release): ${{ steps.version.outputs.release_version }}"
           title: "chore(release): ${{ steps.version.outputs.release_version }}"
@@ -76,6 +87,7 @@ jobs:
             This PR prepares `${{ steps.version.outputs.release_version }}`.
 
             - updates `CHANGELOG.md` with `git-cliff`
+            - syncs `template-aio.xml` `<Changes>` from `CHANGELOG.md`
             - is intended to be merged to `main`
             - requires a separate manual `publish` run after merge
           branch: "release/${{ steps.version.outputs.release_version }}"
