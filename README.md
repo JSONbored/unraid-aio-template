@@ -47,7 +47,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 8. When ready, set `ENABLE_AIO_AUTOMATION=true` and let CI publish and sync.
 9. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
 10. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
-11. Replace the placeholder `<Changes>` block and then let release automation keep it in sync from `CHANGELOG.md`.
+11. Keep the XML `<Changes>` block in the fleet-standard date-first format: `### YYYY-MM-DD` followed by short bullet lines only.
 
 ## Required Actions Variables
 
@@ -100,7 +100,7 @@ Derived repos created from this template should follow this order:
 1. local placeholder cleanup
 2. `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
 3. `python3 scripts/validate-template.py`
-4. `python3 -m venv .venv && . .venv/bin/activate && pip install pytest`
+4. `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
 5. `pytest tests/unit tests/template`
 6. `pytest tests/integration -m integration`
 7. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
@@ -114,7 +114,7 @@ Derived repos created from this template should follow this order:
 CI cost model for derived repos:
 
 - run unit/template tests on relevant PRs and `main` pushes
-- run Docker-backed integration tests only when build-relevant files changed or when a manual dispatch explicitly requests them
+- run Docker-backed integration tests on build-relevant `main` pushes and on manual workflow dispatches
 - require integration success before publish jobs can push images
 - keep local integration runs explicit instead of binding them to every pre-commit or pre-push hook by default
 

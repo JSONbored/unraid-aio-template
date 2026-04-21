@@ -10,4 +10,4 @@ def test_validate_template_script_passes() -> None:
     result = run_command(
         [sys.executable, "scripts/validate-template.py"], cwd=REPO_ROOT
     )
-    assert "template-aio.xml parsed successfully" in result.stdout
+    assert "template-aio.xml parsed successfully" in result.stdout  # nosec B101

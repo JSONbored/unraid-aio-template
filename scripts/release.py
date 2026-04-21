@@ -4,18 +4,26 @@ from __future__ import annotations
 import argparse
 import pathlib
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404 - release helpers shell out only to trusted local git
 from typing import Iterable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CHANGELOG = ROOT / "CHANGELOG.md"
+GIT_BIN = shutil.which("git")
 
 
 SEMVER_TAG = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
 
 
 def git(*args: str) -> str:
-    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+    if GIT_BIN is None:
+        raise SystemExit("git is required to run release helpers")
+    return subprocess.check_output(  # nosec B603 - arguments are fixed git subcommands
+        [GIT_BIN, *args],
+        cwd=ROOT,
+        text=True,
+    ).strip()
 
 
 def semver_key(tag: str) -> tuple[int, int, int] | None:

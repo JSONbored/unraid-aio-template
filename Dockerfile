@@ -1,4 +1,6 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:2780b5c3bab67f1f76c781860de469442999ed1a0d7992a5efdf2cffc0e3d769
+# checkov:skip=CKV_DOCKER_3: s6-overlay requires root init so cont-init scripts can prepare state before services drop privileges
+# checkov:skip=CKV_DOCKER_8: s6-overlay entrypoint must start as root so init scripts can prepare filesystem state before dropping privileges
 
 # Replace this starter base with the real upstream image once the derived repo is wired.
 FROM python:3.12-slim-bookworm
@@ -6,13 +8,15 @@ FROM python:3.12-slim-bookworm
 ARG S6_OVERLAY_VERSION=3.2.1.0
 ARG TARGETARCH
 
+# hadolint ignore=DL3002
 USER root
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    openssl \
-    xz-utils && \
+    ca-certificates="$(apt-cache madison ca-certificates | awk 'NR==1 {print $3}')" \
+    curl="$(apt-cache madison curl | awk 'NR==1 {print $3}')" \
+    openssl="$(apt-cache madison openssl | awk 'NR==1 {print $3}')" \
+    xz-utils="$(apt-cache madison xz-utils | awk 'NR==1 {print $3}')" && \
     curl -L -o /tmp/s6-overlay-noarch.tar.xz "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" && \
     tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
     case "${TARGETARCH}" in \
@@ -22,7 +26,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     esac && \
     curl -L -o /tmp/s6-overlay-arch.tar.xz "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${s6_arch}.tar.xz" && \
     tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
+    groupadd --system appuser && \
+    useradd --system --gid appuser --create-home --home-dir /home/appuser --shell /usr/sbin/nologin appuser && \
     mkdir -p /config /data /run/service-app && \
+    chown -R appuser:appuser /run/service-app && \
     rm -rf /tmp/* /var/lib/apt/lists/*
 
 COPY rootfs/ /

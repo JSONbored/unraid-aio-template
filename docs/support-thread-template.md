@@ -116,6 +116,13 @@ Every support thread should include:
 - tasteful donation links
 - small maintainer section
 
+## Tradeoffs
+
+- Updates can lag upstream releases because the AIO packaging has to be tested and republished separately.
+- Some advanced upstream configuration paths may stay undocumented or unsupported in the default Unraid template.
+- Packaging decisions can differ from the official multi-container deployment guides when the AIO wrapper favors simpler first boot behavior.
+- Users depend on the AIO maintainer for packaging fixes, security updates, and catalog refreshes.
+
 ## Copy-Paste Template
 
 Replace all placeholders before posting.
@@ -143,6 +150,13 @@ This package is designed for Unraid users who want:
 - Beginners who want the easiest reliable Unraid install path
 - Intermediate users who want a cleaner AIO baseline
 - Power users who still want access to supported advanced settings
+
+## Tradeoffs
+
+- Updates to {{UPSTREAM_APP_NAME}} may lag while the AIO packaging is validated and rebuilt.
+- Some advanced upstream configuration paths may not be exposed in the default Unraid template.
+- This packaging may behave differently from the official multi-container deployment guide when the AIO wrapper chooses simpler defaults.
+- You are relying on the AIO maintainer for packaging fixes, security patches, and catalog refreshes.
 
 ## Quick install notes
 

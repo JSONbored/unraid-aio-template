@@ -11,7 +11,7 @@ Use this when turning the template into a real app repo.
 5. Replace the starter service command in [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run).
 6. Replace the starter pytest integration assertions in [`tests/integration/test_container_runtime.py`](/tmp/unraid-aio-template/tests/integration/test_container_runtime.py) with the real app lifecycle expectations.
 7. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) and pin the upstream version in the Dockerfile.
-8. Replace the placeholder `<Changes>` block and plan to keep it synced from `CHANGELOG.md` via [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py).
+8. Keep the XML `<Changes>` block in the date-first fleet format: `### YYYY-MM-DD` followed by short bullet lines only, then let [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py) keep it synced from `CHANGELOG.md`.
 
 ## Files You Will Almost Always Touch
 
@@ -49,6 +49,7 @@ Before enabling it:
 
 - run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
 - run `python3 scripts/validate-template.py`
+- run `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
 - run `pytest tests/unit tests/template`
 - run `pytest tests/integration -m integration`
 - set all required repository variables and secrets
