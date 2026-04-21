@@ -11,6 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 PLACEHOLDER_RELEASE_URL = "https://github.com/JSONbored/yourapp-aio/releases"
+GENERATED_CHANGELOG_NOTE = (
+    "Generated from CHANGELOG.md during release preparation. Do not edit manually."
+)
 
 REQUIRED_TEXT_FIELDS = (
     "Support",
@@ -75,6 +78,10 @@ def main() -> int:
         )
 
     changes = (root.findtext("Changes") or "").strip()
+    if GENERATED_CHANGELOG_NOTE not in changes:
+        return fail(
+            f"{xml_path.name} <Changes> should include the generated-from-CHANGELOG note"
+        )
     if not is_placeholder_template(xml_path):
         expected_release_url = f"https://github.com/JSONbored/{ROOT.name}/releases"
         if expected_release_url not in changes:
@@ -84,7 +91,10 @@ def main() -> int:
             )
     else:
         template_release_url = f"https://github.com/JSONbored/{ROOT.name}/releases"
-        if PLACEHOLDER_RELEASE_URL not in changes and template_release_url not in changes:
+        if (
+            PLACEHOLDER_RELEASE_URL not in changes
+            and template_release_url not in changes
+        ):
             return fail(
                 f"{xml_path.name} placeholder <Changes> block should include either "
                 f"{PLACEHOLDER_RELEASE_URL} or {template_release_url}"

@@ -24,7 +24,7 @@ That means the repo:
 
 - checks upstream on a schedule
 - opens a PR when a new stable version appears
-- runs the normal validation and smoke-test flow
+- runs the normal validation and pytest flow
 - leaves the final merge decision to you
 
 ## Supported Upstream Types
@@ -87,6 +87,6 @@ This gives the upstream monitor a concrete value to compare and update.
 
 The default template policy is stable only. Do not expose prerelease channels until the derived repo has:
 
-- strong smoke tests
+- strong integration tests
 - confidence in upgrade safety
 - a clear reason to offer beta or RC tags publicly

@@ -8,9 +8,11 @@ import re
 import subprocess
 import sys
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CHANGELOG = ROOT / "CHANGELOG.md"
+GENERATED_NOTE = (
+    "- Generated from CHANGELOG.md during release preparation. Do not edit manually."
+)
 
 
 def resolve_template_path() -> pathlib.Path:
@@ -76,8 +78,24 @@ def extract_release_notes(version: str, changelog: pathlib.Path) -> str:
     return notes
 
 
-def build_changes_body(version: str, notes: str, releases_url: str) -> str:
-    lines: list[str] = ["[b]Latest release[/b]", f"- {version}"]
+def release_heading(version: str, changelog: pathlib.Path) -> str:
+    heading = re.compile(
+        rf"^##\s+(?:\[{re.escape(version)}\]\([^)]+\)|{re.escape(version)})(?:\s+-\s+(.+))?$"
+    )
+    for line in changelog.read_text().splitlines():
+        match = heading.match(line.strip())
+        if match:
+            release_date = (match.group(1) or "").strip()
+            if release_date:
+                return f"### {release_date}"
+            break
+    return f"### {version}"
+
+
+def build_changes_body(
+    version: str, notes: str, changelog: pathlib.Path, releases_url: str
+) -> str:
+    lines: list[str] = [release_heading(version, changelog), GENERATED_NOTE]
     for line in notes.splitlines():
         stripped = line.rstrip()
         if not stripped:
@@ -89,8 +107,10 @@ def build_changes_body(version: str, notes: str, releases_url: str) -> str:
             continue
         if stripped.startswith("Full Changelog:"):
             continue
+        if stripped.startswith("## "):
+            continue
         if stripped.startswith("### "):
-            lines.append(f"[b]{stripped[4:]}[/b]")
+            lines.append(stripped)
             continue
         lines.append(stripped)
 
@@ -127,7 +147,9 @@ def main() -> int:
 
     template_path = args.template or resolve_template_path()
     notes = extract_release_notes(args.version, args.changelog)
-    body = build_changes_body(args.version, notes, resolve_release_url())
+    body = build_changes_body(
+        args.version, notes, args.changelog, resolve_release_url()
+    )
     update_template(template_path, encode_for_template(body))
     print(
         f"Updated <Changes> in {template_path} from {args.changelog} for {args.version}"

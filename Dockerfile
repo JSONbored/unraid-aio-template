@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM ghcr.io/example/upstream-image:latest
+# Replace this starter base with the real upstream image once the derived repo is wired.
+FROM python:3.12-slim-bookworm
 
 ARG S6_OVERLAY_VERSION=3.2.1.0
 ARG TARGETARCH
@@ -27,11 +28,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 COPY rootfs/ /
 
 RUN find /etc/cont-init.d -type f -exec chmod +x {} \; && \
-    find /etc/services.d -type f -name run -exec chmod +x {} \;
+    find /etc/services.d -type f -name run -exec chmod +x {} \; && \
+    find /usr/local/bin -type f -name '*.py' -exec chmod +x {} \;
 
 VOLUME ["/config", "/data"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -fsS http://localhost:8080/ >/dev/null || exit 1
+  CMD curl -fsS http://localhost:8080/health >/dev/null || exit 1
 
 ENTRYPOINT ["/init"]

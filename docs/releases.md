@@ -21,4 +21,4 @@ A template release is a versioned milestone for the scaffolding itself, includin
 3. The same preparation flow also syncs the template XML `<Changes>` block from the latest `CHANGELOG.md` entry.
 4. Review and merge that PR into `main`.
 5. Trigger **Release / Template** from `main` again with `action=publish`.
-6. The workflow reads the merged `CHANGELOG.md` entry, creates the Git tag, and publishes the GitHub Release.
+6. The workflow reads the merged `CHANGELOG.md` entry, creates the Git tag, publishes the GitHub Release, and then dispatches the normal build workflow for a pytest-gated image publish.

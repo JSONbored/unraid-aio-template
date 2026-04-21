@@ -8,5 +8,4 @@ if [ -f "${ENV_FILE}" ]; then
     set +a
 fi
 
-echo "[aio-template] Replace this starter service with the real app start command."
-exec sleep infinity
+exec python3 /usr/local/bin/aio-template-app.py
