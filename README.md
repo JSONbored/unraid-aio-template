@@ -47,7 +47,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 8. When ready, set `ENABLE_AIO_AUTOMATION=true` and let CI publish and sync.
 9. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
 10. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
-11. Replace the placeholder `<Changes>` block and then let release automation keep it in sync from `CHANGELOG.md`.
+11. Replace the placeholder `<Changes>` block with a short latest-release summary and then let release automation keep it in sync from `CHANGELOG.md`.
 
 ## Required Actions Variables
 
