@@ -29,6 +29,8 @@ Suggested required checks:
 - `validate-template`
 - `pinned-actions`
 - `dependency-review`
+- `unit-tests`
+- `integration-tests`
 
 ## Actions
 
@@ -90,9 +92,9 @@ Default sync behavior without overrides:
 ## Derived Repo Checks Before Enabling Automation
 
 - `template-aio.xml` has been renamed
-- placeholder upstream image is gone
+- starter base image comment is gone
 - upstream version is pinned explicitly instead of relying on a floating stable tag
-- smoke test uses the real ready log line and real HTTP endpoint
+- integration tests assert the real readiness signal and health endpoint
 - README no longer contains placeholder language
 - XML points at the correct repo, icon, and support URLs
 - `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .` passes locally

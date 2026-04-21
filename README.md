@@ -13,13 +13,13 @@ This template is opinionated on purpose. It is built for repos that should be:
 
 - starter [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile) for wrapping an upstream image with `s6-overlay`
 - starter CA XML at [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
-- reusable smoke test at [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
+- shared pytest harness under [`tests/`](/tmp/unraid-aio-template/tests)
 - generic XML validator at [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
-- CI gate helper and tests at [`scripts/ci_flags.py`](/tmp/unraid-aio-template/scripts/ci_flags.py) and [`scripts/test-ci-flags.py`](/tmp/unraid-aio-template/scripts/test-ci-flags.py)
+- CI gate helper at [`scripts/ci_flags.py`](/tmp/unraid-aio-template/scripts/ci_flags.py)
 - changelog-to-XML sync helper at [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
 - upstream monitor scaffold at [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
-- GitHub Actions for validation, manual heavy-job gating, main-branch smoke-test/publish, security checks, and optional `awesome-unraid` sync
+- GitHub Actions for validation, pytest-backed integration gating, main-branch publish, security checks, and optional `awesome-unraid` sync
 - starter docs, changelog, funding, issue templates, and security policy
 - public repo checklists under [`docs/`](/tmp/unraid-aio-template/docs)
 
@@ -28,7 +28,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 - single-container first when it is realistic and not misleading
 - safe defaults for beginners, advanced knobs for power users
 - generated first-run secrets only when the app truly needs them
-- no publish until placeholders are gone and smoke tests pass
+- no publish until placeholders are gone and pytest passes
 - pinned workflow action SHAs and Renovate-managed dependency updates
 - stable-only upstream tracking with PR-first updates
 - optional upstream image digest tracking for repos that pin immutable manifests
@@ -39,7 +39,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 
 1. Create a new private repo from this template.
 2. Rename `template-aio.xml` to the final app slug, for example `myapp-aio.xml`.
-3. Replace placeholders in the Dockerfile, XML, rootfs scripts, smoke test, README, funding file, and security policy.
+3. Replace placeholders in the Dockerfile, XML, rootfs scripts, pytest harness, README, funding file, and security policy.
 4. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png) with the real icon.
 5. Follow [`docs/customization-guide.md`](/tmp/unraid-aio-template/docs/customization-guide.md).
 6. Follow [`docs/repo-settings.md`](/tmp/unraid-aio-template/docs/repo-settings.md).
@@ -82,7 +82,8 @@ If you do not set the optional sync overrides, the workflow defaults to:
 
 - [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile)
 - [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
-- [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
+- [`pyproject.toml`](/tmp/unraid-aio-template/pyproject.toml)
+- [`tests/`](/tmp/unraid-aio-template/tests/)
 - [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
 - [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
@@ -99,12 +100,23 @@ Derived repos created from this template should follow this order:
 1. local placeholder cleanup
 2. `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
 3. `python3 scripts/validate-template.py`
-4. local image build
-5. local smoke test
-6. enable automation
-7. CI validation and publish
-8. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
-9. real Unraid install validation
+4. `python3 -m venv .venv && . .venv/bin/activate && pip install pytest`
+5. `pytest tests/unit tests/template`
+6. `pytest tests/integration -m integration`
+7. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
+8. `pytest tests/integration -m integration --junit-xml=reports/pytest-integration.xml -o junit_family=xunit1`
+9. `./trunk-analytics-cli validate --junit-paths "reports/*.xml"`
+10. enable automation
+11. CI validation and publish
+12. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
+13. real Unraid install validation
+
+CI cost model for derived repos:
+
+- run unit/template tests on relevant PRs and `main` pushes
+- run Docker-backed integration tests only when build-relevant files changed or when a manual dispatch explicitly requests them
+- require integration success before publish jobs can push images
+- keep local integration runs explicit instead of binding them to every pre-commit or pre-push hook by default
 
 Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklist.md) before making a derived repo public or submitting it to CA.
 

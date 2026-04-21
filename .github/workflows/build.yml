@@ -7,10 +7,12 @@ on:
       - "v*"
     paths:
       - Dockerfile
+      - pyproject.toml
       - "*.xml"
       - assets/**
       - rootfs/**
       - scripts/**
+      - tests/**
       - upstream.toml
       - renovate.json
       - .github/workflows/**
@@ -18,17 +20,19 @@ on:
     branches: [main]
     paths:
       - Dockerfile
+      - pyproject.toml
       - "*.xml"
       - assets/**
       - rootfs/**
       - scripts/**
+      - tests/**
       - upstream.toml
       - renovate.json
       - .github/workflows/**
   workflow_dispatch:
     inputs:
-      run_smoke_test:
-        description: "Run the smoke-test job"
+      run_integration_tests:
+        description: "Run the Docker-backed integration test job"
         required: false
         default: false
         type: boolean
@@ -47,6 +51,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ vars.IMAGE_NAME_OVERRIDE || github.repository }}
+  TRUNK_ORG_URL_SLUG: aethereal
 
 permissions:
   contents: read
@@ -65,7 +70,7 @@ jobs:
       template_assets_related: ${{ steps.filter.outputs.template_assets_related }}
       renovate_related: ${{ steps.filter.outputs.renovate_related }}
       tooling_related: ${{ steps.filter.outputs.tooling_related }}
-      run_smoke_requested: ${{ steps.filter.outputs.run_smoke_requested }}
+      run_tests_requested: ${{ steps.filter.outputs.run_tests_requested }}
       publish_requested: ${{ steps.filter.outputs.publish_requested }}
     steps:
       - name: Checkout
@@ -82,13 +87,13 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           GITHUB_SHA_VALUE: ${{ github.sha }}
           GITHUB_REF_VALUE: ${{ github.ref }}
-          RUN_SMOKE_TEST_INPUT: ${{ github.event.inputs.run_smoke_test || '' }}
+          RUN_TESTS_INPUT: ${{ github.event.inputs.run_integration_tests || '' }}
           PUBLISH_IMAGES_INPUT: ${{ github.event.inputs.publish_images || '' }}
         run: |
           python3 scripts/ci_flags.py \
             --event-name "${EVENT_NAME}" \
             --ref "${GITHUB_REF_VALUE}" \
-            --run-smoke-test-input "${RUN_SMOKE_TEST_INPUT}" \
+            --run-tests-input "${RUN_TESTS_INPUT}" \
             --publish-images-input "${PUBLISH_IMAGES_INPUT}" >> "${GITHUB_OUTPUT}"
 
           if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
@@ -146,7 +151,7 @@ jobs:
           while IFS= read -r path; do
             [[ -z "${path}" ]] && continue
             case "${path}" in
-              Dockerfile|upstream.toml|rootfs/*)
+              Dockerfile|pyproject.toml|upstream.toml|rootfs/*|tests/*)
                 build_related=true
                 ;;
               *.xml|assets/*)
@@ -182,11 +187,9 @@ jobs:
       - name: Validate shell and python scripts
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
         run: |
-          bash -n scripts/smoke-test.sh
           bash -n scripts/validate-derived-repo.sh
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/ci_flags.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/check-upstream.py
-          PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/test-ci-flags.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/validate-template.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/update-template-changes.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/release.py
@@ -196,7 +199,9 @@ jobs:
       - name: Validate CI flag resolver behavior
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
         run: |
-          python3 scripts/test-ci-flags.py
+          python3 -m venv .venv-ci
+          .venv-ci/bin/pip install pytest
+          .venv-ci/bin/pytest tests/unit/test_ci_flags.py
 
       - name: Validate XML
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.template_assets_related == 'true' }}
@@ -259,8 +264,8 @@ jobs:
       - name: Dependency review
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
 
-  smoke-test:
-    if: ${{ needs.detect-changes.outputs.build_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && needs.detect-changes.outputs.run_smoke_requested == 'true' }}
+  unit-tests:
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.template_assets_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
     needs:
       - detect-changes
       - validate-template
@@ -269,39 +274,96 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
-
-      - name: Build local test image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
-        with:
-          context: .
-          platforms: linux/amd64
-          load: true
-          tags: aio-template:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Smoke test
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install pytest
         run: |
-          chmod +x scripts/smoke-test.sh
-          export KEEP_SMOKE_ARTIFACTS=1
-          bash -x ./scripts/smoke-test.sh aio-template:ci
+          python3 -m venv .venv-ci
+          .venv-ci/bin/pip install pytest
 
-      - name: Dump smoke test diagnostics
+      - name: Run pytest unit tests
+        id: unit_pytest
+        run: |
+          mkdir -p reports
+          rm -f reports/pytest-unit.xml
+          set +e
+          .venv-ci/bin/pytest \
+            tests/unit \
+            tests/template \
+            --junit-xml=reports/pytest-unit.xml \
+            -o junit_family=xunit1
+          status=$?
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload unit test results to Trunk
+        if: ${{ always() && secrets.TRUNK_API_TOKEN != '' }}
+        continue-on-error: true
+        uses: trunk-io/analytics-uploader@0e6c416c9d47c105654657984e5e4f0506dd84aa # v1
+        env:
+          TRUNK_API_TOKEN: ${{ secrets.TRUNK_API_TOKEN }}
+        with:
+          junit-paths: reports/pytest-unit.xml
+          org-slug: ${{ env.TRUNK_ORG_URL_SLUG }}
+          token: ${{ env.TRUNK_API_TOKEN }}
+
+      - name: Fail if unit tests failed
+        if: ${{ steps.unit_pytest.outputs.exit_code != '0' }}
+        run: exit 1
+
+  integration-tests:
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' && needs.detect-changes.outputs.run_tests_requested == 'true' }}
+    needs:
+      - detect-changes
+      - validate-template
+      - pinned-actions
+      - unit-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install pytest
+        run: |
+          python3 -m venv .venv-ci
+          .venv-ci/bin/pip install pytest
+
+      - name: Run pytest integration tests
+        id: integration_pytest
+        run: |
+          mkdir -p reports
+          rm -f reports/pytest-integration.xml
+          set +e
+          .venv-ci/bin/pytest \
+            tests/integration \
+            -m integration \
+            --junit-xml=reports/pytest-integration.xml \
+            -o junit_family=xunit1
+          status=$?
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload integration test results to Trunk
+        if: ${{ always() && secrets.TRUNK_API_TOKEN != '' }}
+        continue-on-error: true
+        uses: trunk-io/analytics-uploader@0e6c416c9d47c105654657984e5e4f0506dd84aa # v1
+        env:
+          TRUNK_API_TOKEN: ${{ secrets.TRUNK_API_TOKEN }}
+        with:
+          junit-paths: reports/pytest-integration.xml
+          org-slug: ${{ env.TRUNK_ORG_URL_SLUG }}
+          token: ${{ env.TRUNK_API_TOKEN }}
+
+      - name: Dump Docker diagnostics
         if: failure()
         run: |
-          echo "Active containers:"
           docker ps -a
           echo
-          echo "Inspecting smoke container:"
-          docker inspect "${CONTAINER_NAME:-aio-template-smoke}" || true
-          echo
-          echo "Container logs:"
-          docker logs "${CONTAINER_NAME:-aio-template-smoke}" || true
+          docker images
+
+      - name: Fail if integration tests failed
+        if: ${{ steps.integration_pytest.outputs.exit_code != '0' }}
+        run: exit 1
 
   publish:
     if: ${{ needs.detect-changes.outputs.build_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name != 'pull_request' && needs.detect-changes.outputs.publish_requested == 'true' }}
@@ -309,7 +371,8 @@ jobs:
       - detect-changes
       - validate-template
       - pinned-actions
-      - smoke-test
+      - unit-tests
+      - integration-tests
     runs-on: ubuntu-latest
     permissions:
       contents: read

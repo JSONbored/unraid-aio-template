@@ -7,7 +7,6 @@ import re
 import subprocess
 from typing import Iterable
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CHANGELOG = ROOT / "CHANGELOG.md"
 
@@ -66,8 +65,13 @@ def next_release_version() -> str:
     major, minor, patch = semver_key(latest)  # type: ignore[arg-type]
     commit_messages = list(commits_since(latest))
 
-    has_breaking = any("BREAKING CHANGE" in message or re.match(r"^[a-z]+(\(.+\))?!:", message) for message in commit_messages)
-    has_feature = any(re.match(r"^feat(\(.+\))?:", message) for message in commit_messages)
+    has_breaking = any(
+        "BREAKING CHANGE" in message or re.match(r"^[a-z]+(\(.+\))?!:", message)
+        for message in commit_messages
+    )
+    has_feature = any(
+        re.match(r"^feat(\(.+\))?:", message) for message in commit_messages
+    )
 
     if has_breaking:
         major += 1
@@ -136,7 +140,9 @@ def find_release_commit(version: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Release helpers for semver-based repos.")
+    parser = argparse.ArgumentParser(
+        description="Release helpers for semver-based repos."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("next-version")
@@ -144,11 +150,15 @@ def main() -> None:
     subparsers.add_parser("latest-release-tag")
 
     latest_parser = subparsers.add_parser("latest-changelog-version")
-    latest_parser.add_argument("--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG)
+    latest_parser.add_argument(
+        "--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG
+    )
 
     notes_parser = subparsers.add_parser("extract-release-notes")
     notes_parser.add_argument("version")
-    notes_parser.add_argument("--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG)
+    notes_parser.add_argument(
+        "--changelog", type=pathlib.Path, default=DEFAULT_CHANGELOG
+    )
 
     commit_parser = subparsers.add_parser("find-release-commit")
     commit_parser.add_argument("version")
