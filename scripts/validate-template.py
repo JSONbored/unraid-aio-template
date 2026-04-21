@@ -2,17 +2,25 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
-
-# nosec B405 - this validator reads a trusted local repository XML file only
-import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from defusedxml import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 
-PLACEHOLDER_RELEASE_URL = "https://github.com/JSONbored/yourapp-aio/releases"
 GENERATED_CHANGELOG_NOTE = (
     "Generated from CHANGELOG.md during release preparation. Do not edit manually."
+)
+GENERATED_CHANGELOG_BULLET = f"- {GENERATED_CHANGELOG_NOTE}"
+CHANGELOG_HEADER_PATTERN = re.compile(
+    r"^### (?:\d{4}-\d{2}-\d{2}|Replace with release date)$"
+)
+LEGACY_CHANGELOG_MARKERS = (
+    "[b]Latest release[/b]",
+    "GitHub Releases",
+    "Full changelog and release notes:",
 )
 
 REQUIRED_TEXT_FIELDS = (
@@ -51,14 +59,49 @@ def fail(message: str) -> int:
     return 1
 
 
+def validate_changes_block(xml_path: Path, changes: str) -> int:
+    for marker in LEGACY_CHANGELOG_MARKERS:
+        if marker in changes:
+            return fail(
+                f"{xml_path.name} <Changes> still includes the legacy release-link format: {marker}"
+            )
+
+    lines = [line.strip() for line in changes.splitlines() if line.strip()]
+    if len(lines) < 2:
+        return fail(
+            f"{xml_path.name} <Changes> must contain a date heading and bullet lines"
+        )
+
+    if not CHANGELOG_HEADER_PATTERN.fullmatch(lines[0]):
+        return fail(
+            f"{xml_path.name} <Changes> must start with '### YYYY-MM-DD' or the template placeholder heading"
+        )
+
+    if lines[1] != GENERATED_CHANGELOG_BULLET:
+        return fail(
+            f"{xml_path.name} <Changes> second line should be '{GENERATED_CHANGELOG_BULLET}'"
+        )
+
+    invalid_lines = [line for line in lines[1:] if not line.startswith("- ")]
+    if invalid_lines:
+        return fail(
+            f"{xml_path.name} <Changes> must use bullet lines only after the heading; found {invalid_lines[0]!r}"
+        )
+
+    return 0
+
+
 def main() -> int:
     xml_path = resolve_template_path()
     if not xml_path.exists():
         return fail(f"Template XML not found: {xml_path}")
 
-    # nosec B314 - trusted local template file only
     tree = ET.parse(xml_path)
     root = tree.getroot()
+    if root.tag != "Container":
+        return fail(f"{xml_path.name} root tag should be <Container>")
+    if root.attrib.get("version") != "2":
+        return fail(f'{xml_path.name} should declare <Container version="2">')
 
     for field in REQUIRED_TEXT_FIELDS:
         value = (root.findtext(field) or "").strip()
@@ -82,23 +125,9 @@ def main() -> int:
         return fail(
             f"{xml_path.name} <Changes> should include the generated-from-CHANGELOG note"
         )
-    if not is_placeholder_template(xml_path):
-        expected_release_url = f"https://github.com/JSONbored/{ROOT.name}/releases"
-        if expected_release_url not in changes:
-            return fail(
-                f"{xml_path.name} <Changes> should include the canonical GitHub releases URL: "
-                f"{expected_release_url}"
-            )
-    else:
-        template_release_url = f"https://github.com/JSONbored/{ROOT.name}/releases"
-        if (
-            PLACEHOLDER_RELEASE_URL not in changes
-            and template_release_url not in changes
-        ):
-            return fail(
-                f"{xml_path.name} placeholder <Changes> block should include either "
-                f"{PLACEHOLDER_RELEASE_URL} or {template_release_url}"
-            )
+    changes_status = validate_changes_block(xml_path, changes)
+    if changes_status:
+        return changes_status
 
     invalid_option_configs: list[str] = []
     invalid_pipe_configs: list[str] = []
@@ -142,7 +171,10 @@ def main() -> int:
             print(f"  - {detail}", file=sys.stderr)
         return 1
 
-    print(f"{xml_path.name} parsed successfully and passed catalog-safe validation")
+    template_kind = "placeholder " if is_placeholder_template(xml_path) else ""
+    print(
+        f"{xml_path.name} parsed successfully and passed {template_kind}catalog-safe validation"
+    )
     return 0
 
 

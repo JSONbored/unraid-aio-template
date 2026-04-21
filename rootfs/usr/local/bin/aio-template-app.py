@@ -4,7 +4,9 @@ from __future__ import annotations
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HOST = "0.0.0.0"
+HOST = os.environ.get(
+    "APP_HOST", "0.0.0.0"
+)  # nosec B104 - container service binds intentionally
 PORT = int(os.environ.get("APP_PORT", "8080"))
 
 

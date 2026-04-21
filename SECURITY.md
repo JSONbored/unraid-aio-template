@@ -4,12 +4,12 @@
 
 Only the `main` branch, the current `latest` image tag, and the current semver template release tags are supported with security fixes.
 
-| Version                     | Supported |
-| --------------------------- | --------- |
-| main                        | yes       |
-| latest                      | yes       |
-| current semver release tags | yes       |
-| older                       | no        |
+| Version                              | Supported |
+| ------------------------------------ | --------- |
+| main                                 | yes       |
+| latest                               | yes       |
+| current semver template release tags | yes       |
+| older                                | no        |
 
 ## Reporting a Vulnerability
 

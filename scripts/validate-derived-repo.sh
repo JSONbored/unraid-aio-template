@@ -49,15 +49,18 @@ require_absent ".github/CODEOWNERS"
 
 effective_template_xml="${TEMPLATE_XML-}"
 if [[ -z ${effective_template_xml} ]]; then
-	repo_name="$(basename "$(pwd)")"
+	repo_name="${PWD##*/}"
 	inferred_repo_xml="${repo_name}.xml"
 	if [[ -f ${inferred_repo_xml} ]]; then
 		effective_template_xml="${inferred_repo_xml}"
 	else
 		root_xml_files=()
-		while IFS= read -r xml_path; do
+		shopt -s nullglob
+		for xml_path in ./*.xml; do
+			[[ -f ${xml_path} ]] || continue
 			root_xml_files+=("${xml_path#./}")
-		done < <(find . -maxdepth 1 -type f -name '*.xml' -print | sort)
+		done
+		shopt -u nullglob
 		if [[ ${#root_xml_files[@]} -eq 1 ]]; then
 			effective_template_xml="${root_xml_files[0]}"
 		fi
@@ -69,14 +72,6 @@ if [[ ${ENABLE_AIO_AUTOMATION-} == "true" ]]; then
 	require_file "${effective_template_xml}"
 	require_absent "template-aio.xml"
 fi
-
-critical_files=(
-	"Dockerfile"
-	"pyproject.toml"
-	"tests/unit/test_ci_flags.py"
-	"tests/template/test_validate_template.py"
-	"tests/integration/test_container_runtime.py"
-)
 
 xml_files=()
 if [[ -n ${effective_template_xml} ]] && [[ -f ${effective_template_xml} ]]; then

@@ -12,10 +12,8 @@
   <Overview>Replace this overview with the real app description and first-run guidance.</Overview>
   <Changes>### Replace with release date&#xD;
 - Generated from CHANGELOG.md during release preparation. Do not edit manually.&#xD;
-&#xD;
 - Replace this block with release notes generated from CHANGELOG.md.&#xD;
-&#xD;
-Full changelog and release notes: [url=https://github.com/JSONbored/yourapp-aio/releases]GitHub Releases[/url]</Changes>
+</Changes>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/yourapp-aio.xml</TemplateURL>

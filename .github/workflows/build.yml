@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     tags:
-      - "v*"
+      - v*
     paths:
       - Dockerfile
       - pyproject.toml
@@ -30,22 +30,6 @@ on:
       - renovate.json
       - .github/workflows/**
   workflow_dispatch:
-    inputs:
-      run_integration_tests:
-        description: "Run the Docker-backed integration test job"
-        required: false
-        default: false
-        type: boolean
-      publish_images:
-        description: "Publish image tags from the current ref"
-        required: false
-        default: false
-        type: boolean
-      sync_awesome_unraid:
-        description: "Open or refresh the awesome-unraid sync pull request"
-        required: false
-        default: false
-        type: boolean
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -87,14 +71,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           GITHUB_SHA_VALUE: ${{ github.sha }}
           GITHUB_REF_VALUE: ${{ github.ref }}
-          RUN_TESTS_INPUT: ${{ github.event.inputs.run_integration_tests || '' }}
-          PUBLISH_IMAGES_INPUT: ${{ github.event.inputs.publish_images || '' }}
         run: |
           python3 scripts/ci_flags.py \
             --event-name "${EVENT_NAME}" \
-            --ref "${GITHUB_REF_VALUE}" \
-            --run-tests-input "${RUN_TESTS_INPUT}" \
-            --publish-images-input "${PUBLISH_IMAGES_INPUT}" >> "${GITHUB_OUTPUT}"
+            --ref "${GITHUB_REF_VALUE}" >> "${GITHUB_OUTPUT}"
 
           if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
             echo "build_related=true" >> "${GITHUB_OUTPUT}"
@@ -200,13 +180,15 @@ jobs:
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
         run: |
           python3 -m venv .venv-ci
-          .venv-ci/bin/pip install pytest
+          .venv-ci/bin/pip install -r requirements-dev.txt
           .venv-ci/bin/pytest tests/unit/test_ci_flags.py
 
       - name: Validate XML
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.template_assets_related == 'true' }}
         run: |
-          python3 scripts/validate-template.py
+          python3 -m venv .venv-ci
+          .venv-ci/bin/pip install -r requirements-dev.txt
+          .venv-ci/bin/python scripts/validate-template.py
 
       - name: Validate derived repo placeholders
         run: |
@@ -273,12 +255,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      TRUNK_API_TOKEN: ${{ secrets.TRUNK_API_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install pytest
         run: |
           python3 -m venv .venv-ci
-          .venv-ci/bin/pip install pytest
+          .venv-ci/bin/pip install -r requirements-dev.txt
 
       - name: Run pytest unit tests
         id: unit_pytest
@@ -296,7 +280,7 @@ jobs:
           exit 0
 
       - name: Upload unit test results to Trunk
-        if: ${{ always() && secrets.TRUNK_API_TOKEN != '' }}
+        if: ${{ always() && env.TRUNK_API_TOKEN != '' }}
         continue-on-error: true
         uses: trunk-io/analytics-uploader@0e6c416c9d47c105654657984e5e4f0506dd84aa # v1
         env:
@@ -320,13 +304,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      TRUNK_API_TOKEN: ${{ secrets.TRUNK_API_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install pytest
         run: |
           python3 -m venv .venv-ci
-          .venv-ci/bin/pip install pytest
+          .venv-ci/bin/pip install -r requirements-dev.txt
 
       - name: Run pytest integration tests
         id: integration_pytest
@@ -344,7 +330,7 @@ jobs:
           exit 0
 
       - name: Upload integration test results to Trunk
-        if: ${{ always() && secrets.TRUNK_API_TOKEN != '' }}
+        if: ${{ always() && env.TRUNK_API_TOKEN != '' }}
         continue-on-error: true
         uses: trunk-io/analytics-uploader@0e6c416c9d47c105654657984e5e4f0506dd84aa # v1
         env:
@@ -366,7 +352,7 @@ jobs:
         run: exit 1
 
   publish:
-    if: ${{ needs.detect-changes.outputs.build_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name != 'pull_request' && needs.detect-changes.outputs.publish_requested == 'true' }}
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name == 'push' && needs.detect-changes.outputs.publish_requested == 'true' && (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped') }}
     needs:
       - detect-changes
       - validate-template
@@ -431,7 +417,7 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
 
   sync-awesome-unraid:
-    if: ${{ needs.detect-changes.outputs.template_assets_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.sync_awesome_unraid == 'true')) }}
+    if: ${{ needs.detect-changes.outputs.template_assets_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     needs:
       - detect-changes
       - validate-template

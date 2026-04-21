@@ -1,4 +1,5 @@
 #!/command/with-contenv bash
+# shellcheck shell=bash
 set -euo pipefail
 
 # Optional example hook for repos that embed PostgreSQL inside the AIO image.
