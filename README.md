@@ -103,7 +103,7 @@ Derived repos created from this template should follow this order:
 4. `pytest tests/integration -m integration`
 5. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
 6. `pytest tests/integration -m integration --junit-xml=reports/pytest-integration.xml -o junit_family=xunit1`
-7. `./trunk-analytics-cli validate --junit-paths "reports/*.xml"`
+7. `./trunk-analytics-cli validate --junit-paths "reports/pytest-unit.xml,reports/pytest-integration.xml"`
 8. enable automation
 9. CI validation and publish
 10. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
@@ -112,7 +112,7 @@ Derived repos created from this template should follow this order:
 CI cost model for derived repos:
 
 - run unit/template tests on relevant PRs and `main` pushes
-- run Docker-backed integration tests on build-relevant `main` pushes and on manual workflow dispatches
+- run Docker-backed integration tests on build-relevant `main` pushes, on release-metadata `main` pushes that are still publish-eligible, and on manual workflow dispatches
 - require integration success before publish jobs can push images
 - keep local integration runs explicit instead of binding them to every pre-commit or pre-push hook by default
 
