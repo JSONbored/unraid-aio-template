@@ -11,7 +11,6 @@
 - configure `upstream.toml`
 - add a screenshot or demo visual if the app has a UI
 - set the repo About description, topics, and social preview image
-- run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
 - run `pytest tests/unit tests/template`
 - run `pytest tests/integration -m integration`
 

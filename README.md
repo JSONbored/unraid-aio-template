@@ -98,18 +98,16 @@ If you do not set the optional sync overrides, the workflow defaults to:
 Derived repos created from this template should follow this order:
 
 1. local placeholder cleanup
-2. `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
-3. `python3 scripts/validate-template.py`
-4. `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
-5. `pytest tests/unit tests/template`
-6. `pytest tests/integration -m integration`
-7. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
-8. `pytest tests/integration -m integration --junit-xml=reports/pytest-integration.xml -o junit_family=xunit1`
-9. `./trunk-analytics-cli validate --junit-paths "reports/*.xml"`
-10. enable automation
-11. CI validation and publish
-12. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
-13. real Unraid install validation
+2. `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
+3. `pytest tests/unit tests/template`
+4. `pytest tests/integration -m integration`
+5. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
+6. `pytest tests/integration -m integration --junit-xml=reports/pytest-integration.xml -o junit_family=xunit1`
+7. `./trunk-analytics-cli validate --junit-paths "reports/*.xml"`
+8. enable automation
+9. CI validation and publish
+10. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
+11. real Unraid install validation
 
 CI cost model for derived repos:
 
