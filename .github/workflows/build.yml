@@ -1,4 +1,4 @@
-name: CI / Template
+name: Build AIO Image
 
 on:
   push:
@@ -40,6 +40,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
   PYTHON_VERSION: "3.13"
   TRUNK_ORG_URL_SLUG: aethereal
 
@@ -57,7 +58,7 @@ jobs:
       contents: read
     outputs:
       build_related: ${{ steps.filter.outputs.build_related }}
-      template_assets_related: ${{ steps.filter.outputs.template_assets_related }}
+      xml_related: ${{ steps.filter.outputs.xml_related }}
       renovate_related: ${{ steps.filter.outputs.renovate_related }}
       tooling_related: ${{ steps.filter.outputs.tooling_related }}
       workflow_related: ${{ steps.filter.outputs.workflow_related }}
@@ -85,7 +86,7 @@ jobs:
 
           if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
             echo "build_related=true" >> "${GITHUB_OUTPUT}"
-            echo "template_assets_related=true" >> "${GITHUB_OUTPUT}"
+            echo "xml_related=true" >> "${GITHUB_OUTPUT}"
             echo "renovate_related=true" >> "${GITHUB_OUTPUT}"
             echo "tooling_related=true" >> "${GITHUB_OUTPUT}"
             echo "workflow_related=true" >> "${GITHUB_OUTPUT}"
@@ -103,7 +104,7 @@ jobs:
           if ! git rev-parse --git-dir >/dev/null 2>&1; then
             echo "Git metadata is unavailable; treating the workflow as fully impacted."
             echo "build_related=true" >> "${GITHUB_OUTPUT}"
-            echo "template_assets_related=true" >> "${GITHUB_OUTPUT}"
+            echo "xml_related=true" >> "${GITHUB_OUTPUT}"
             echo "renovate_related=true" >> "${GITHUB_OUTPUT}"
             echo "tooling_related=true" >> "${GITHUB_OUTPUT}"
             echo "workflow_related=true" >> "${GITHUB_OUTPUT}"
@@ -114,7 +115,7 @@ jobs:
             if ! changed_files="$(git show --pretty='' --name-only "${head}" 2>/dev/null)"; then
               echo "Unable to inspect commit range; treating the workflow as fully impacted."
               echo "build_related=true" >> "${GITHUB_OUTPUT}"
-              echo "template_assets_related=true" >> "${GITHUB_OUTPUT}"
+              echo "xml_related=true" >> "${GITHUB_OUTPUT}"
               echo "renovate_related=true" >> "${GITHUB_OUTPUT}"
               echo "tooling_related=true" >> "${GITHUB_OUTPUT}"
               echo "workflow_related=true" >> "${GITHUB_OUTPUT}"
@@ -124,7 +125,7 @@ jobs:
             if ! changed_files="$(git diff --name-only "${base}" "${head}" 2>/dev/null)"; then
               echo "Unable to diff commit range; treating the workflow as fully impacted."
               echo "build_related=true" >> "${GITHUB_OUTPUT}"
-              echo "template_assets_related=true" >> "${GITHUB_OUTPUT}"
+              echo "xml_related=true" >> "${GITHUB_OUTPUT}"
               echo "renovate_related=true" >> "${GITHUB_OUTPUT}"
               echo "tooling_related=true" >> "${GITHUB_OUTPUT}"
               echo "workflow_related=true" >> "${GITHUB_OUTPUT}"
@@ -135,7 +136,7 @@ jobs:
           printf 'Changed files:\n%s\n' "${changed_files}"
 
           build_related=false
-          template_assets_related=false
+          xml_related=false
           renovate_related=false
           tooling_related=false
           workflow_related=false
@@ -146,8 +147,8 @@ jobs:
               Dockerfile|pyproject.toml|requirements-dev.txt|upstream.toml|rootfs/*|tests/*)
                 build_related=true
                 ;;
-              *.xml|assets/*)
-                template_assets_related=true
+              template-aio.xml|assets/*)
+                xml_related=true
                 ;;
               CHANGELOG.md|cliff.toml|scripts/*|.trunk/*)
                 tooling_related=true
@@ -163,20 +164,17 @@ jobs:
           done <<< "${changed_files}"
 
           echo "build_related=${build_related}" >> "${GITHUB_OUTPUT}"
-          echo "template_assets_related=${template_assets_related}" >> "${GITHUB_OUTPUT}"
+          echo "xml_related=${xml_related}" >> "${GITHUB_OUTPUT}"
           echo "renovate_related=${renovate_related}" >> "${GITHUB_OUTPUT}"
           echo "tooling_related=${tooling_related}" >> "${GITHUB_OUTPUT}"
           echo "workflow_related=${workflow_related}" >> "${GITHUB_OUTPUT}"
 
   validate-template:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.template_assets_related == 'true' || needs.detect-changes.outputs.renovate_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.xml_related == 'true' || needs.detect-changes.outputs.renovate_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      ENABLE_AIO_AUTOMATION: ${{ vars.ENABLE_AIO_AUTOMATION }}
-      TEMPLATE_XML: ${{ vars.TEMPLATE_XML }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -192,6 +190,15 @@ jobs:
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/release.py
           find rootfs -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
           find rootfs -type f -path '*/run' -print0 | xargs -0 -n1 bash -n
+
+      - name: Validate XML
+        if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.xml_related == 'true' }}
+        run: python3 scripts/validate-template.py
+
+      - name: Validate derived repo placeholders
+        run: |
+          chmod +x scripts/validate-derived-repo.sh
+          ./scripts/validate-derived-repo.sh .
 
       - name: Validate Renovate config
         if: ${{ needs.detect-changes.outputs.renovate_related == 'true' }}
@@ -252,7 +259,7 @@ jobs:
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
 
   unit-tests:
-    if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.template_assets_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.xml_related == 'true' || needs.detect-changes.outputs.tooling_related == 'true' }}
     needs:
       - detect-changes
       - validate-template
@@ -389,8 +396,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      IMAGE_NAME_OVERRIDE: ${{ vars.IMAGE_NAME_OVERRIDE }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -411,8 +416,7 @@ jobs:
       - name: Compute image tags
         id: prep
         run: |
-          image_name="${IMAGE_NAME_OVERRIDE:-${GITHUB_REPOSITORY}}"
-          image="$(printf '%s' "${REGISTRY}/${image_name}" | tr '[:upper:]' '[:lower:]')"
+          image="$(printf '%s' "${REGISTRY}/${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
           sha_tag="${image}:sha-${GITHUB_SHA}"
 
           {
@@ -433,7 +437,7 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
 
   sync-awesome-unraid:
-    if: ${{ needs.detect-changes.outputs.template_assets_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ needs.detect-changes.outputs.xml_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs:
       - detect-changes
       - validate-template
@@ -441,80 +445,56 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      TEMPLATE_XML: ${{ vars.TEMPLATE_XML || 'template-aio.xml' }}
+      TEMPLATE_ICON_PATH: ${{ vars.TEMPLATE_ICON_PATH || 'assets/app-icon.png' }}
+      TARGET_REPOSITORY: ${{ vars.AWESOME_UNRAID_REPOSITORY || 'JSONbored/awesome-unraid' }}
+      TARGET_XML_NAME: ${{ vars.AWESOME_UNRAID_XML_NAME || 'template-aio.xml' }}
+      TARGET_ICON_NAME: ${{ vars.AWESOME_UNRAID_ICON_NAME || 'template.png' }}
     steps:
-      - name: Resolve sync configuration
-        id: sync_config
+      - name: Check sync configuration
         env:
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
-          TEMPLATE_XML_INPUT: ${{ vars.TEMPLATE_XML }}
-          TEMPLATE_ICON_PATH_INPUT: ${{ vars.TEMPLATE_ICON_PATH }}
-          TARGET_REPOSITORY_INPUT: ${{ vars.AWESOME_UNRAID_REPOSITORY }}
-          TARGET_XML_NAME_INPUT: ${{ vars.AWESOME_UNRAID_XML_NAME }}
-          TARGET_ICON_NAME_INPUT: ${{ vars.AWESOME_UNRAID_ICON_NAME }}
         run: |
-          template_xml="${TEMPLATE_XML_INPUT:-template-aio.xml}"
-          template_icon_path="${TEMPLATE_ICON_PATH_INPUT:-assets/app-icon.png}"
-          target_repository="${TARGET_REPOSITORY_INPUT:-JSONbored/awesome-unraid}"
-          target_xml_name="${TARGET_XML_NAME_INPUT:-template-aio.xml}"
-          target_icon_name="${TARGET_ICON_NAME_INPUT:-}"
-
-          if [[ -n "${SYNC_TOKEN}" && -n "${template_xml}" && -n "${target_repository}" && -n "${target_xml_name}" ]]; then
-            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+          if [[ -z "${SYNC_TOKEN}" ]]; then
+            echo "SYNC_ENABLED=false" >> "${GITHUB_ENV}"
+            echo "SYNC_TOKEN is not configured; skipping sync."
           else
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "Sync is not fully configured; skipping."
+            echo "SYNC_ENABLED=true" >> "${GITHUB_ENV}"
           fi
 
-          echo "template_xml=${template_xml}" >> "${GITHUB_OUTPUT}"
-          echo "template_icon_path=${template_icon_path}" >> "${GITHUB_OUTPUT}"
-          echo "target_repository=${target_repository}" >> "${GITHUB_OUTPUT}"
-          echo "target_xml_name=${target_xml_name}" >> "${GITHUB_OUTPUT}"
-          echo "target_icon_name=${target_icon_name}" >> "${GITHUB_OUTPUT}"
-
       - name: Checkout Source Repository
-        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
+        if: ${{ env.SYNC_ENABLED == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Checkout Target Repository
-        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
+        if: ${{ env.SYNC_ENABLED == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ steps.sync_config.outputs.target_repository }}
+          repository: ${{ env.TARGET_REPOSITORY }}
           token: ${{ secrets.SYNC_TOKEN }}
           path: target-repo
 
       - name: Copy and Commit Template
-        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
-        env:
-          TEMPLATE_XML: ${{ steps.sync_config.outputs.template_xml }}
-          TEMPLATE_ICON_PATH: ${{ steps.sync_config.outputs.template_icon_path }}
-          TARGET_XML_NAME: ${{ steps.sync_config.outputs.target_xml_name }}
-          TARGET_ICON_NAME: ${{ steps.sync_config.outputs.target_icon_name }}
+        if: ${{ env.SYNC_ENABLED == 'true' }}
         run: |
-          if [[ -z "${TARGET_ICON_NAME}" && -f "${TEMPLATE_ICON_PATH}" ]]; then
-            stem="${TARGET_XML_NAME%.xml}"
-            stem="${stem%-aio}"
-            TARGET_ICON_NAME="${stem}.png"
-          fi
           cp "${TEMPLATE_XML}" "target-repo/${TARGET_XML_NAME}"
           mkdir -p target-repo/icons
-          if [[ -n "${TARGET_ICON_NAME}" && -f "${TEMPLATE_ICON_PATH}" ]]; then
-            cp "${TEMPLATE_ICON_PATH}" "target-repo/icons/${TARGET_ICON_NAME}"
-          fi
+          cp "${TEMPLATE_ICON_PATH}" "target-repo/icons/${TARGET_ICON_NAME}"
 
       - name: Create sync pull request
-        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
+        if: ${{ env.SYNC_ENABLED == 'true' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.SYNC_TOKEN }}
           path: target-repo
           add-paths: |
-            ${{ steps.sync_config.outputs.target_xml_name }}
-            icons/${{ steps.sync_config.outputs.target_icon_name }}
-          commit-message: "chore: auto-sync AIO template assets"
-          branch: "sync-awesome-unraid/${{ github.event.repository.name }}"
+            ${{ env.TARGET_XML_NAME }}
+            icons/${{ env.TARGET_ICON_NAME }}
+          commit-message: "chore: auto-sync template assets"
+          branch: sync-awesome-unraid/unraid-aio-template
           delete-branch: true
           base: main
-          title: "chore: sync ${{ github.event.repository.name }} template assets"
+          title: "chore: sync template assets"
           body: |
             Automated sync from `${{ github.repository }}`.
