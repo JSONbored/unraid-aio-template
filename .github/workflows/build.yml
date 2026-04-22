@@ -484,17 +484,47 @@ jobs:
 
       - name: Create sync pull request
         if: ${{ env.SYNC_ENABLED == 'true' }}
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          token: ${{ secrets.SYNC_TOKEN }}
-          path: target-repo
-          add-paths: |
-            ${{ env.TARGET_XML_NAME }}
-            icons/${{ env.TARGET_ICON_NAME }}
-          commit-message: "chore: auto-sync template assets"
-          branch: sync-awesome-unraid/unraid-aio-template
-          delete-branch: true
-          base: main
-          title: "chore: sync template assets"
-          body: |
-            Automated sync from `${{ github.repository }}`.
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          cd target-repo
+          branch="sync-awesome-unraid/unraid-aio-template"
+          title="chore: sync template assets"
+          body="Automated sync from \`${SOURCE_REPOSITORY}\`."
+
+          if [[ -z "$(git status --porcelain -- "${TARGET_XML_NAME}" "icons/${TARGET_ICON_NAME}")" ]]; then
+            echo "No awesome-unraid changes to sync."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B "${branch}"
+          git add "${TARGET_XML_NAME}" "icons/${TARGET_ICON_NAME}"
+          git commit -m "chore: auto-sync template assets"
+          git push --force origin "HEAD:${branch}"
+
+          existing_pr="$(gh pr list \
+            --repo "${TARGET_REPOSITORY}" \
+            --head "${branch}" \
+            --base main \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          if [[ -n "${existing_pr}" ]]; then
+            gh pr edit "${existing_pr}" \
+              --repo "${TARGET_REPOSITORY}" \
+              --title "${title}" \
+              --body "${body}"
+          else
+            gh pr create \
+              --repo "${TARGET_REPOSITORY}" \
+              --head "${branch}" \
+              --base main \
+              --title "${title}" \
+              --body "${body}"
+          fi
