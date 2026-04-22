@@ -40,7 +40,6 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ vars.IMAGE_NAME_OVERRIDE || github.repository }}
   PYTHON_VERSION: "3.13"
   TRUNK_ORG_URL_SLUG: aethereal
 
@@ -390,6 +389,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      IMAGE_NAME_OVERRIDE: ${{ vars.IMAGE_NAME_OVERRIDE }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -410,7 +411,8 @@ jobs:
       - name: Compute image tags
         id: prep
         run: |
-          image="$(printf '%s' "${REGISTRY}/${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
+          image_name="${IMAGE_NAME_OVERRIDE:-${GITHUB_REPOSITORY}}"
+          image="$(printf '%s' "${REGISTRY}/${image_name}" | tr '[:upper:]' '[:lower:]')"
           sha_tag="${image}:sha-${GITHUB_SHA}"
 
           {
@@ -439,39 +441,55 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      TEMPLATE_XML: ${{ vars.TEMPLATE_XML || format('{0}.xml', github.event.repository.name) }}
-      TEMPLATE_ICON_PATH: ${{ vars.TEMPLATE_ICON_PATH || 'assets/app-icon.png' }}
-      TARGET_REPOSITORY: ${{ vars.AWESOME_UNRAID_REPOSITORY || 'JSONbored/awesome-unraid' }}
-      TARGET_XML_NAME: ${{ vars.AWESOME_UNRAID_XML_NAME || format('{0}.xml', github.event.repository.name) }}
-      TARGET_ICON_NAME: ${{ vars.AWESOME_UNRAID_ICON_NAME || '' }}
     steps:
-      - name: Verify sync configuration
-        id: token
+      - name: Resolve sync configuration
+        id: sync_config
         env:
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          TEMPLATE_XML_INPUT: ${{ vars.TEMPLATE_XML }}
+          TEMPLATE_ICON_PATH_INPUT: ${{ vars.TEMPLATE_ICON_PATH }}
+          TARGET_REPOSITORY_INPUT: ${{ vars.AWESOME_UNRAID_REPOSITORY }}
+          TARGET_XML_NAME_INPUT: ${{ vars.AWESOME_UNRAID_XML_NAME }}
+          TARGET_ICON_NAME_INPUT: ${{ vars.AWESOME_UNRAID_ICON_NAME }}
         run: |
-          if [[ -n "${SYNC_TOKEN}" && -n "${TEMPLATE_XML}" && -n "${TARGET_REPOSITORY}" && -n "${TARGET_XML_NAME}" ]]; then
+          template_xml="${TEMPLATE_XML_INPUT:-template-aio.xml}"
+          template_icon_path="${TEMPLATE_ICON_PATH_INPUT:-assets/app-icon.png}"
+          target_repository="${TARGET_REPOSITORY_INPUT:-JSONbored/awesome-unraid}"
+          target_xml_name="${TARGET_XML_NAME_INPUT:-template-aio.xml}"
+          target_icon_name="${TARGET_ICON_NAME_INPUT:-}"
+
+          if [[ -n "${SYNC_TOKEN}" && -n "${template_xml}" && -n "${target_repository}" && -n "${target_xml_name}" ]]; then
             echo "enabled=true" >> "${GITHUB_OUTPUT}"
           else
             echo "enabled=false" >> "${GITHUB_OUTPUT}"
             echo "Sync is not fully configured; skipping."
           fi
 
+          echo "template_xml=${template_xml}" >> "${GITHUB_OUTPUT}"
+          echo "template_icon_path=${template_icon_path}" >> "${GITHUB_OUTPUT}"
+          echo "target_repository=${target_repository}" >> "${GITHUB_OUTPUT}"
+          echo "target_xml_name=${target_xml_name}" >> "${GITHUB_OUTPUT}"
+          echo "target_icon_name=${target_icon_name}" >> "${GITHUB_OUTPUT}"
+
       - name: Checkout Source Repository
-        if: ${{ steps.token.outputs.enabled == 'true' }}
+        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Checkout Target Repository
-        if: ${{ steps.token.outputs.enabled == 'true' }}
+        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ env.TARGET_REPOSITORY }}
+          repository: ${{ steps.sync_config.outputs.target_repository }}
           token: ${{ secrets.SYNC_TOKEN }}
           path: target-repo
 
       - name: Copy and Commit Template
-        if: ${{ steps.token.outputs.enabled == 'true' }}
+        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
+        env:
+          TEMPLATE_XML: ${{ steps.sync_config.outputs.template_xml }}
+          TEMPLATE_ICON_PATH: ${{ steps.sync_config.outputs.template_icon_path }}
+          TARGET_XML_NAME: ${{ steps.sync_config.outputs.target_xml_name }}
+          TARGET_ICON_NAME: ${{ steps.sync_config.outputs.target_icon_name }}
         run: |
           if [[ -z "${TARGET_ICON_NAME}" && -f "${TEMPLATE_ICON_PATH}" ]]; then
             stem="${TARGET_XML_NAME%.xml}"
@@ -485,14 +503,14 @@ jobs:
           fi
 
       - name: Create sync pull request
-        if: ${{ steps.token.outputs.enabled == 'true' }}
+        if: ${{ steps.sync_config.outputs.enabled == 'true' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.SYNC_TOKEN }}
           path: target-repo
           add-paths: |
-            ${{ env.TARGET_XML_NAME }}
-            icons/${{ env.TARGET_ICON_NAME }}
+            ${{ steps.sync_config.outputs.target_xml_name }}
+            icons/${{ steps.sync_config.outputs.target_icon_name }}
           commit-message: "chore: auto-sync AIO template assets"
           branch: "sync-awesome-unraid/${{ github.event.repository.name }}"
           delete-branch: true
