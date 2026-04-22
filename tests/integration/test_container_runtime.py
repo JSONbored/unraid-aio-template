@@ -23,8 +23,7 @@ def test_happy_path_boot_and_restart_persists_generated_env(
 ) -> None:
     with runtime.container() as container:
         container.wait_for_http()
-        env_file = container.config_dir / "aio/generated.env"
-        assert env_file.is_file()  # nosec B101
+        assert container.path_exists("/config/aio/generated.env")  # nosec B101
 
         secret_before = container.exec(
             "awk -F= '/^APP_SECRET_KEY=/{print $2}' /config/aio/generated.env"
