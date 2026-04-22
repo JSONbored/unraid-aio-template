@@ -97,5 +97,5 @@ Default sync behavior without overrides:
 - integration tests assert the real readiness signal and health endpoint
 - README no longer contains placeholder language
 - XML points at the correct repo, icon, and support URLs
-- `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .` passes locally
+- `pytest tests/unit tests/template` passes locally, including the placeholder and XML checks
 - `upstream.toml` matches the real upstream app and update strategy

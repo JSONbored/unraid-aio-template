@@ -47,8 +47,6 @@ The build workflow only publishes when `ENABLE_AIO_AUTOMATION=true`.
 
 Before enabling it:
 
-- run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
-- run `python3 scripts/validate-template.py`
 - run `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
 - run `pytest tests/unit tests/template`
 - run `pytest tests/integration -m integration`
