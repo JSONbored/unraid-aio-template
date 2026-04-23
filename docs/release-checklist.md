@@ -11,17 +11,16 @@
 - configure `upstream.toml`
 - add a screenshot or demo visual if the app has a UI
 - set the repo About description, topics, and social preview image
-- run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
-- run the smoke test locally against the real image
+- run `pytest tests/unit tests/template`
+- run `pytest tests/integration -m integration`
 
 ## Before Enabling Actions
 
-- set `ENABLE_AIO_AUTOMATION=true`
 - add optional sync override variables only if you need to diverge from the repo-name defaults
 - add `SYNC_TOKEN`
 - confirm Renovate is installed for the repo
 - verify branch protection and secret scanning are enabled
-- confirm `validate-template` passes on PRs before expecting `smoke-test` only on `main` or explicit manual dispatch
+- confirm `validate-template`, `unit-tests`, and `integration-tests` pass before allowing publish
 
 ## Before Unraid Submission
 

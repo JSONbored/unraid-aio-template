@@ -9,16 +9,17 @@ Use this when turning the template into a real app repo.
 3. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png).
 4. Update [`README.md`](/tmp/unraid-aio-template/README.md), [`SECURITY.md`](/tmp/unraid-aio-template/SECURITY.md), and [`.github/FUNDING.yml`](/tmp/unraid-aio-template/.github/FUNDING.yml).
 5. Replace the starter service command in [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run).
-6. Adjust [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh) so it waits for the real ready log line and probes the real HTTP endpoint.
+6. Replace the starter pytest integration assertions in [`tests/integration/test_container_runtime.py`](/tmp/unraid-aio-template/tests/integration/test_container_runtime.py) with the real app lifecycle expectations.
 7. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) and pin the upstream version in the Dockerfile.
-8. Replace the placeholder `<Changes>` block and plan to keep it synced from `CHANGELOG.md` via [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py).
+8. Keep the XML `<Changes>` block in the date-first fleet format: `### YYYY-MM-DD` followed by short bullet lines only, then let [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py) keep it synced from `CHANGELOG.md`.
 
 ## Files You Will Almost Always Touch
 
 - [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile)
 - [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - [`README.md`](/tmp/unraid-aio-template/README.md)
-- [`scripts/smoke-test.sh`](/tmp/unraid-aio-template/scripts/smoke-test.sh)
+- [`pyproject.toml`](/tmp/unraid-aio-template/pyproject.toml)
+- [`tests/integration/test_container_runtime.py`](/tmp/unraid-aio-template/tests/integration/test_container_runtime.py)
 - [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
 - [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
@@ -38,17 +39,17 @@ If the derived app does need internal PostgreSQL:
 
 - install the required PostgreSQL packages in [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile)
 - replace the example init script with real cluster/bootstrap logic
-- update the smoke test to validate persistence or first-boot expectations when relevant
+- update the integration tests to validate persistence or first-boot expectations when relevant
 
 ## CI and Publishing
 
-The build workflow only publishes when `ENABLE_AIO_AUTOMATION=true`.
+The build workflow publishes from `main` once the required registry and sync secrets are configured.
 
 Before enabling it:
 
-- run `STRICT_PLACEHOLDERS=true bash scripts/validate-derived-repo.sh .`
-- run `python3 scripts/validate-template.py`
-- run the smoke test locally against the real image
+- run `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
+- run `pytest tests/unit tests/template`
+- run `pytest tests/integration -m integration`
 - set all required repository variables and secrets
 - confirm the XML, icon, and package names match the intended public repo
 - confirm the upstream monitor matches the real upstream source and stable channel

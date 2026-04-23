@@ -2,7 +2,7 @@ name: Check Upstream Version
 
 on:
   schedule:
-    - cron: "23 7 * * 1"
+    - cron: 23 7 * * 1
   workflow_dispatch:
 
 env:
@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   check-upstream:
-    if: ${{ vars.ENABLE_AIO_AUTOMATION == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

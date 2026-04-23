@@ -1,3 +1,5 @@
+# Pull Request
+
 ## Summary
 
 - what changed
@@ -5,7 +7,7 @@
 
 ## Validation
 
-- [ ] local smoke test passed
+- [ ] local validation suite passed
 - [ ] docs updated if behavior changed
 - [ ] XML updated if config surface changed
 

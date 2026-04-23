@@ -2,14 +2,14 @@
 
 ## Supported Versions
 
-Only the `main` branch, the current `latest` image tag, and the current upstream-aligned version tags are supported with security fixes.
+Only the `main` branch, the current `latest` image tag, and the current semver template release tags are supported with security fixes.
 
-| Version | Supported |
-| ------- | --------- |
-| main    | yes       |
-| latest  | yes       |
-| current upstream-aligned tags | yes |
-| older   | no        |
+| Version                              | Supported |
+| ------------------------------------ | --------- |
+| main                                 | yes       |
+| latest                               | yes       |
+| current semver template release tags | yes       |
+| older                                | no        |
 
 ## Reporting a Vulnerability
 
