@@ -43,7 +43,7 @@ If the derived app does need internal PostgreSQL:
 
 ## CI and Publishing
 
-The build workflow only publishes when `ENABLE_AIO_AUTOMATION=true`.
+The build workflow publishes from `main` once the required registry and sync secrets are configured.
 
 Before enabling it:
 

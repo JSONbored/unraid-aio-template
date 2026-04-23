@@ -7,7 +7,6 @@ from tests.helpers import pytest_env, run_command
 def test_validate_derived_repo_script_passes_for_template_defaults() -> None:
     env = pytest_env()
     env.pop("STRICT_PLACEHOLDERS", None)
-    env.pop("ENABLE_AIO_AUTOMATION", None)
     env.pop("TEMPLATE_XML", None)
     result = run_command(
         ["bash", "scripts/validate-derived-repo.sh", "."],

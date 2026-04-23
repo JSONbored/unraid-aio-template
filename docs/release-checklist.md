@@ -16,7 +16,6 @@
 
 ## Before Enabling Actions
 
-- set `ENABLE_AIO_AUTOMATION=true`
 - add optional sync override variables only if you need to diverge from the repo-name defaults
 - add `SYNC_TOKEN`
 - confirm Renovate is installed for the repo

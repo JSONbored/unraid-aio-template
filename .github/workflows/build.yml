@@ -1,4 +1,4 @@
-name: Build AIO Image
+name: CI / Template
 
 on:
   push:
@@ -416,7 +416,7 @@ jobs:
         run: exit 1
 
   publish:
-    if: ${{ needs.detect-changes.outputs.build_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name == 'push' && needs.detect-changes.outputs.publish_requested == 'true' && needs.integration-tests.result == 'success' }}
+    if: ${{ needs.detect-changes.outputs.build_related == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.publish_requested == 'true' && needs.integration-tests.result == 'success' }}
     needs:
       - detect-changes
       - validate-template
@@ -468,7 +468,7 @@ jobs:
           tags: ${{ steps.prep.outputs.tags }}
 
   sync-awesome-unraid:
-    if: ${{ needs.detect-changes.outputs.xml_related == 'true' && vars.ENABLE_AIO_AUTOMATION == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ needs.detect-changes.outputs.xml_related == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     needs:
       - detect-changes
       - validate-template

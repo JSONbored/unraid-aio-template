@@ -43,17 +43,14 @@ This template is opinionated on purpose. It is built for repos that should be:
 4. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png) with the real icon.
 5. Follow [`docs/customization-guide.md`](/tmp/unraid-aio-template/docs/customization-guide.md).
 6. Follow [`docs/repo-settings.md`](/tmp/unraid-aio-template/docs/repo-settings.md).
-7. Keep `ENABLE_AIO_AUTOMATION` unset until the derived repo passes local validation.
-8. When ready, set `ENABLE_AIO_AUTOMATION=true` and let CI publish and sync.
-9. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
-10. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
-11. Keep the XML `<Changes>` block in the fleet-standard date-first format: `### YYYY-MM-DD` followed by short bullet lines only.
+7. Once secrets are configured, let `main` pushes handle package publishing and downstream XML sync PRs automatically.
+8. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
+9. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
+10. Keep the XML `<Changes>` block in the fleet-standard date-first format: `### YYYY-MM-DD` followed by short bullet lines only.
 
-## Required Actions Variables
+## Actions Variables
 
-Only one Actions variable is required for the default JSONbored workflow:
-
-- `ENABLE_AIO_AUTOMATION=true`
+No Actions variables are required for the default JSONbored workflow.
 
 Optional overrides:
 

@@ -58,9 +58,7 @@ Suggested required checks:
 
 ## Secrets and Variables
 
-Required variable:
-
-- `ENABLE_AIO_AUTOMATION=true`
+No Actions variables are required by default.
 
 Optional variables:
 
