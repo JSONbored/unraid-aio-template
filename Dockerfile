@@ -3,7 +3,7 @@
 # checkov:skip=CKV_DOCKER_8: s6-overlay entrypoint must start as root so init scripts can prepare filesystem state before dropping privileges
 
 # Replace this starter base with the real upstream image once the derived repo is wired.
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim-bookworm@sha256:58525e1a8dada8e72d6f8a11a0ddff8d981fd888549108db52455d577f927f77
 
 ARG S6_OVERLAY_VERSION=3.2.1.0
 ARG TARGETARCH
