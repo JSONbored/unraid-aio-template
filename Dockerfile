@@ -40,6 +40,8 @@ RUN find /etc/cont-init.d -type f -exec chmod +x {} \; && \
 
 VOLUME ["/config", "/data"]
 
+EXPOSE 8080
+
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=300000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
