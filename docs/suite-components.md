@@ -59,6 +59,9 @@ repo behavior.
 
 - Each component publishes to its own image repository so `latest` remains
   unambiguous.
+- Component image publish jobs must require a build-impacting change for that
+  component. XML, icon, README, and catalog-only changes should validate and
+  sync catalog assets without publishing unchanged images.
 - App components should keep upstream-aligned release suffixes like `aio`.
 - Companion components should use an explicit suffix like `agent`, `worker`, or
   `proxy`.

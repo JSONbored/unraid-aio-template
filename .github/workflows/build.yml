@@ -331,7 +331,7 @@ jobs:
           trunk-org-slug: ${{ env.TRUNK_ORG_URL_SLUG }}
 
   integration-tests:
-    if: ${{ needs.detect-changes.outputs.run_tests_requested == 'true' && (needs.detect-changes.outputs.build_related == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.publish_requested == 'true')) }}
+    if: ${{ needs.detect-changes.outputs.run_tests_requested == 'true' && needs.detect-changes.outputs.build_related == 'true' }}
     needs:
       - detect-changes
       - validate-template
