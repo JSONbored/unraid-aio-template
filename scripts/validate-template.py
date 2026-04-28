@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import sys
 from pathlib import Path
 
 from defusedxml import ElementTree as ET
+
+try:
+    from components import load_components
+except (
+    ImportError
+):  # pragma: no cover - used when imported as scripts.validate_template
+    from scripts.components import load_components
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -91,8 +99,7 @@ def validate_changes_block(xml_path: Path, changes: str) -> int:
     return 0
 
 
-def main() -> int:
-    xml_path = resolve_template_path()
+def validate_template(xml_path: Path) -> int:
     if not xml_path.exists():
         return fail(f"Template XML not found: {xml_path}")
 
@@ -176,6 +183,24 @@ def main() -> int:
         f"{xml_path.name} parsed successfully and passed {template_kind}catalog-safe validation"
     )
     return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate Unraid template XML.")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Validate every template referenced by components.toml.",
+    )
+    args = parser.parse_args()
+
+    if args.all:
+        failures = 0
+        for component in load_components():
+            failures += validate_template(ROOT / component.template)
+        return 1 if failures else 0
+
+    return validate_template(resolve_template_path())
 
 
 if __name__ == "__main__":

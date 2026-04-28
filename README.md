@@ -15,6 +15,7 @@ This template is opinionated on purpose. It is built for repos that should be:
 - starter CA XML at [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - shared pytest harness under [`tests/`](/tmp/unraid-aio-template/tests)
 - generic XML validator at [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
+- optional suite component manifest support via [`components.toml`](/tmp/unraid-aio-template/docs/suite-components.md)
 - CI gate helper at [`scripts/ci_flags.py`](/tmp/unraid-aio-template/scripts/ci_flags.py)
 - changelog-to-XML sync helper at [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
@@ -47,6 +48,12 @@ This template is opinionated on purpose. It is built for repos that should be:
 8. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
 9. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
 10. Keep the XML `<Changes>` block in the fleet-standard date-first format: `### YYYY-MM-DD` followed by short bullet lines only.
+
+For ecosystems that need companion images such as agents, workers, or proxies,
+use the optional suite component pattern in
+[`docs/suite-components.md`](/tmp/unraid-aio-template/docs/suite-components.md).
+Most repos should still stay single-component unless the companion is tightly
+bound to the same upstream product and support surface.
 
 ## Actions Variables
 
@@ -83,6 +90,7 @@ If you do not set the optional sync overrides, the workflow defaults to:
 - [`tests/`](/tmp/unraid-aio-template/tests/)
 - [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
 - [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
+- [`scripts/components.py`](/tmp/unraid-aio-template/scripts/components.py)
 - [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
 - [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run)
 - [`README.md`](/tmp/unraid-aio-template/README.md)
