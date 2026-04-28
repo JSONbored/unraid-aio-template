@@ -8,6 +8,11 @@ import shutil
 import subprocess  # nosec B404 - release helpers shell out only to trusted local git
 from typing import Iterable
 
+try:
+    from components import get_component
+except ImportError:  # pragma: no cover - used when imported as a package module
+    from scripts.components import get_component
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CHANGELOG = ROOT / "CHANGELOG.md"
 GIT_BIN = shutil.which("git")
@@ -188,6 +193,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Release helpers for semver-based repos."
     )
+    parser.add_argument(
+        "--component",
+        help="Optional component name from components.toml. Semver template releases are repo-wide, so this only validates the component exists.",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("next-version")
@@ -211,6 +220,8 @@ def main() -> None:
     target_parser.add_argument("version")
 
     args = parser.parse_args()
+    if args.component:
+        get_component(args.component)
 
     if args.command == "next-version":
         print(next_release_version())

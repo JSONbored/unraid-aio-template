@@ -17,6 +17,8 @@ on:
       - .trunk/**
       - .github/actions/**
       - upstream.toml
+      - components.toml
+      - components/**
       - renovate.json
       - .github/workflows/**
   pull_request:
@@ -35,6 +37,8 @@ on:
       - .trunk/**
       - .github/actions/**
       - upstream.toml
+      - components.toml
+      - components/**
       - renovate.json
       - .github/workflows/**
   workflow_dispatch:
@@ -147,7 +151,7 @@ jobs:
           while IFS= read -r path; do
             [[ -z "${path}" ]] && continue
             case "${path}" in
-              Dockerfile|pyproject.toml|requirements-dev.txt|upstream.toml|rootfs/*|tests/*)
+              Dockerfile|pyproject.toml|requirements-dev.txt|upstream.toml|components.toml|components/*|rootfs/*|tests/*)
                 build_related=true
                 ;;
               template-aio.xml|assets/*)
@@ -198,6 +202,7 @@ jobs:
           bash -n scripts/validate-derived-repo.sh
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/ci_flags.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/check-upstream.py
+          PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/components.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/validate-template.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/update-template-changes.py
           PYTHONPYCACHEPREFIX=/tmp/unraid-aio-template-pyc python3 -m py_compile scripts/release.py
@@ -206,7 +211,7 @@ jobs:
 
       - name: Validate XML
         if: ${{ needs.detect-changes.outputs.build_related == 'true' || needs.detect-changes.outputs.xml_related == 'true' }}
-        run: python3 scripts/validate-template.py
+        run: python3 scripts/validate-template.py --all
 
       - name: Validate derived repo placeholders
         run: |
@@ -326,7 +331,7 @@ jobs:
           trunk-org-slug: ${{ env.TRUNK_ORG_URL_SLUG }}
 
   integration-tests:
-    if: ${{ needs.detect-changes.outputs.run_tests_requested == 'true' && (needs.detect-changes.outputs.build_related == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.publish_requested == 'true')) }}
+    if: ${{ needs.detect-changes.outputs.run_tests_requested == 'true' && needs.detect-changes.outputs.build_related == 'true' }}
     needs:
       - detect-changes
       - validate-template
