@@ -16,7 +16,6 @@ This template is opinionated on purpose. It is built for repos that should be:
 - shared pytest harness under [`tests/`](/tmp/unraid-aio-template/tests)
 - generic XML validator at [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
 - optional suite component manifest support via [`components.toml`](/tmp/unraid-aio-template/docs/suite-components.md)
-- CI gate helper at [`scripts/ci_flags.py`](/tmp/unraid-aio-template/scripts/ci_flags.py)
 - changelog-to-XML sync helper at [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
 - derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
 - upstream monitor scaffold at [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
