@@ -81,5 +81,4 @@ jobs:
 
       catalog_assets: |
         template-aio.xml|template-aio.xml
-        assets/app-icon.png|icons/template.png
     secrets: inherit
