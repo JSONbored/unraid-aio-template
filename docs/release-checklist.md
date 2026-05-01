@@ -8,7 +8,7 @@
 - confirm README, SECURITY, and FUNDING are accurate
 - confirm `Support`, `Project`, `TemplateURL`, and `Icon` URLs are correct
 - pin the upstream version explicitly
-- configure `upstream.toml`
+- configure the repo in `aio-fleet/fleet.yml` and export `.aio-fleet.yml`
 - add a screenshot or demo visual if the app has a UI
 - set the repo About description, topics, and social preview image
 - run `pytest tests/unit tests/template`
@@ -17,10 +17,10 @@
 ## Before Enabling Actions
 
 - add optional sync override variables only if you need to diverge from the repo-name defaults
-- add `SYNC_TOKEN`
-- confirm Renovate is installed for the repo
+- confirm the `aio-fleet` GitHub App is installed on this repo and `awesome-unraid`
+- confirm shared dependency/upstream automation is represented in `aio-fleet`
 - verify branch protection and secret scanning are enabled
-- confirm `validate-template`, `unit-tests`, and `integration-tests` pass before allowing publish
+- confirm `aio-fleet / required` passes before allowing publish
 
 ## Before Unraid Submission
 
