@@ -1,6 +1,6 @@
 # Unraid AIO Template
 
-A hardened starter for future `*-aio` repositories: one public repo per app, one companion GHCR image, one Unraid CA XML, and one beginner-first experience that still leaves room for power-user overrides.
+A hardened starter for future `*-aio` repositories: one public repo per app, one Docker Hub-facing image, one Unraid CA XML, and one beginner-first experience that still leaves room for power-user overrides.
 
 This template is opinionated on purpose. It is built for repos that should be:
 
