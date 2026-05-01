@@ -16,9 +16,8 @@ A template release is a versioned milestone for the scaffolding itself, includin
 
 ## Release flow
 
-1. Trigger **Prepare Release / Template** from `main`.
-2. The workflow computes the next semver version and opens a release PR that updates `CHANGELOG.md`.
-3. The same preparation flow also syncs the template XML `<Changes>` block from the latest `CHANGELOG.md` entry.
-4. Review and merge that PR into `main`.
-5. Trigger **Publish Release / Template** from `main`.
-6. The workflow reads the merged `CHANGELOG.md` entry, creates the Git tag, and publishes the GitHub Release.
+1. From `aio-fleet`, run `python -m aio_fleet release status --repo unraid-aio-template` to inspect the next semver release.
+2. Run `python -m aio_fleet release prepare --repo unraid-aio-template` on a release branch, then open a `chore(release): <version>` PR.
+3. Review and merge that PR into `main`.
+4. Run the central `aio-fleet` control check for the release target commit and require `aio-fleet / required` to pass.
+5. Run `python -m aio_fleet release publish --repo unraid-aio-template` from `aio-fleet` to create the GitHub Release.

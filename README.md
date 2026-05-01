@@ -14,12 +14,8 @@ This template is opinionated on purpose. It is built for repos that should be:
 - starter [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile) for wrapping an upstream image with `s6-overlay`
 - starter CA XML at [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - shared pytest harness under [`tests/`](/tmp/unraid-aio-template/tests)
-- generic XML validator at [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
-- optional suite component manifest support via [`components.toml`](/tmp/unraid-aio-template/docs/suite-components.md)
-- changelog-to-XML sync helper at [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
-- derived-repo guardrail script at [`scripts/validate-derived-repo.sh`](/tmp/unraid-aio-template/scripts/validate-derived-repo.sh)
-- upstream monitor scaffold at [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
-- GitHub Actions for validation, pytest-backed integration gating, main-branch publish, security checks, and optional `awesome-unraid` sync
+- declarative fleet manifest at [`.aio-fleet.yml`](/tmp/unraid-aio-template/.aio-fleet.yml)
+- app-owned Docker/rootfs/XML/docs/tests only; shared validation, release, registry, catalog, upstream, and Trunk behavior lives in `aio-fleet`
 - starter docs, changelog, funding, issue templates, and security policy
 - public repo checklists under [`docs/`](/tmp/unraid-aio-template/docs)
 
@@ -29,10 +25,8 @@ This template is opinionated on purpose. It is built for repos that should be:
 - safe defaults for beginners, advanced knobs for power users
 - generated first-run secrets only when the app truly needs them
 - no publish until placeholders are gone and pytest passes
-- pinned workflow action SHAs and Renovate-managed dependency updates
-- stable-only upstream tracking with PR-first updates
-- optional upstream image digest tracking for repos that pin immutable manifests
-- update automation opens PRs, but merge decisions stay manual
+- shared CI, Trunk, upstream tracking, changelog, release, and registry rules are declared in `aio-fleet`
+- update automation opens PRs/checks, but merge decisions stay manual
 - public repos stay public-facing and product-facing only
 
 ## Recommended Workflow
@@ -43,10 +37,9 @@ This template is opinionated on purpose. It is built for repos that should be:
 4. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png) with the real icon.
 5. Follow [`docs/customization-guide.md`](/tmp/unraid-aio-template/docs/customization-guide.md).
 6. Follow [`docs/repo-settings.md`](/tmp/unraid-aio-template/docs/repo-settings.md).
-7. Once secrets are configured, let `main` pushes handle package publishing and downstream XML sync PRs automatically.
-8. Install the Renovate GitHub App for the derived repo so pinned actions and Docker dependencies stay current.
-9. Configure [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml) so the repo can monitor the wrapped upstream app.
-10. Keep the XML `<Changes>` block in the fleet-standard date-first format: `### YYYY-MM-DD` followed by short bullet lines only.
+7. Add the repo to `aio-fleet/fleet.yml`, then export the app manifest with `python -m aio_fleet export-app-manifest --repo <repo> --write`.
+8. Let `aio-fleet` own package publishing, downstream XML sync PRs, upstream monitoring, release preparation, and Trunk.
+9. Keep the XML `<Changes>` block in the fleet-standard date-first format generated from `aio-fleet`.
 
 For ecosystems that need companion images such as agents, workers, or proxies,
 use the optional suite component pattern in
@@ -54,32 +47,17 @@ use the optional suite component pattern in
 Most repos should still stay single-component unless the companion is tightly
 bound to the same upstream product and support surface.
 
-## Actions Variables
+## Control Plane
 
-No Actions variables are required for the default JSONbored workflow.
+Derived repos should not carry shared workflow, Trunk, release, upstream, or validator shims. `aio-fleet` owns those surfaces and reads the app repo through `.aio-fleet.yml` plus the central `fleet.yml`.
 
-Optional overrides:
+The final app repo surface should stay narrow:
 
-- `IMAGE_NAME_OVERRIDE=jsonbored/yourapp-aio`
-- `TEMPLATE_XML=yourapp-aio.xml`
-- `AWESOME_UNRAID_REPOSITORY=JSONbored/awesome-unraid`
-- `AWESOME_UNRAID_XML_NAME=yourapp-aio.xml`
-- `AWESOME_UNRAID_ICON_NAME=yourapp.png`
-- `TEMPLATE_ICON_PATH=assets/app-icon.png`
-
-If you do not set the optional sync overrides, the workflow defaults to:
-
-- target repo: `JSONbored/awesome-unraid`
-- XML name: `<repo-name>.xml`
-- icon path: `assets/app-icon.png`
-- icon name: derived from the XML name, for example `yourapp-aio.xml -> yourapp.png`
-
-## Required Actions Secret
-
-- `SYNC_TOKEN`
-  - fine-grained PAT
-  - repository access: `JSONbored/awesome-unraid`
-  - permission: `Contents: Read and write`
+- Dockerfile/rootfs/runtime logic
+- XML or XML generator
+- app-specific assets and docs
+- app-specific tests
+- `.aio-fleet.yml`
 
 ## Files To Customize First
 
@@ -87,15 +65,12 @@ If you do not set the optional sync overrides, the workflow defaults to:
 - [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
 - [`pyproject.toml`](/tmp/unraid-aio-template/pyproject.toml)
 - [`tests/`](/tmp/unraid-aio-template/tests/)
-- [`scripts/validate-template.py`](/tmp/unraid-aio-template/scripts/validate-template.py)
-- [`scripts/update-template-changes.py`](/tmp/unraid-aio-template/scripts/update-template-changes.py)
-- [`scripts/components.py`](/tmp/unraid-aio-template/scripts/components.py)
 - [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
 - [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run)
 - [`README.md`](/tmp/unraid-aio-template/README.md)
 - [`.github/FUNDING.yml`](/tmp/unraid-aio-template/.github/FUNDING.yml)
 - [`SECURITY.md`](/tmp/unraid-aio-template/SECURITY.md)
-- [`upstream.toml`](/tmp/unraid-aio-template/upstream.toml)
+- [`.aio-fleet.yml`](/tmp/unraid-aio-template/.aio-fleet.yml)
 
 ## Validation Flow
 
@@ -105,19 +80,15 @@ Derived repos created from this template should follow this order:
 2. `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
 3. `pytest tests/unit tests/template`
 4. `pytest tests/integration -m integration`
-5. `pytest tests/unit tests/template --junit-xml=reports/pytest-unit.xml -o junit_family=xunit1`
-6. `pytest tests/integration -m integration --junit-xml=reports/pytest-integration.xml -o junit_family=xunit1`
-7. `./trunk-analytics-cli validate --junit-paths "reports/pytest-unit.xml,reports/pytest-integration.xml"`
-8. enable automation
-9. CI validation and publish
-10. `awesome-unraid` sync using the repo-name-derived defaults or your optional overrides
-11. real Unraid install validation
+5. from `aio-fleet`: `python -m aio_fleet validate --repo <repo>`
+6. from `aio-fleet`: `python -m aio_fleet control-check --repo <repo> --sha <sha> --event pull_request`
+7. real Unraid install validation
 
-CI cost model for derived repos:
+Control-plane cost model for derived repos:
 
-- run unit/template tests on relevant PRs and `main` pushes
-- run Docker-backed integration tests on build-relevant `main` pushes, on release-metadata `main` pushes that are still publish-eligible, and on manual workflow dispatches
-- require integration success before publish jobs can push images
+- run central validation and app-local unit/template tests for pull requests
+- run Docker-backed integration tests on `main`, release, or manual control-plane checks
+- require `aio-fleet / required` before protected-branch merges
 - keep local integration runs explicit instead of binding them to every pre-commit or pre-push hook by default
 
 Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklist.md) before making a derived repo public or submitting it to CA.
