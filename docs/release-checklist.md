@@ -11,7 +11,7 @@
 - configure the repo in `aio-fleet/fleet.yml` and export `.aio-fleet.yml`
 - add a screenshot or demo visual if the app has a UI
 - set the repo About description, topics, and social preview image
-- run `pytest tests/unit tests/template`
+- from `aio-fleet`, run `python -m aio_fleet validate-repo --repo <repo> --repo-path ../<repo>`
 - run `pytest tests/integration -m integration`
 
 ## Before Enabling Actions

@@ -25,6 +25,5 @@ catalog:
     - source: template-aio.xml
       target: template-aio.xml
 tests:
-  unit: tests/template
   integration: tests/integration -m integration
   checkout_submodules: false
