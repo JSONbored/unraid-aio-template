@@ -78,9 +78,9 @@ Derived repos created from this template should follow this order:
 
 1. local placeholder cleanup
 2. `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
-3. `pytest tests/unit tests/template`
+3. from `aio-fleet`: `python -m aio_fleet validate-repo --repo <repo> --repo-path ../<repo>`
 4. `pytest tests/integration -m integration`
-5. from `aio-fleet`: `python -m aio_fleet validate --repo <repo>`
+5. from `aio-fleet`: `python -m aio_fleet cleanup-repo --repo <repo> --verify`
 6. from `aio-fleet`: `python -m aio_fleet control-check --repo <repo> --sha <sha> --event pull_request`
 7. real Unraid install validation
 

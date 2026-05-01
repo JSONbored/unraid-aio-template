@@ -48,7 +48,7 @@ The central `aio-fleet` control plane publishes from `main` once the required re
 Before enabling it:
 
 - run `python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt`
-- run `pytest tests/unit tests/template`
+- from `aio-fleet`, run `python -m aio_fleet validate-repo --repo <repo> --repo-path ../<repo>`
 - run `pytest tests/integration -m integration`
 - set all required repository variables and secrets
 - confirm the XML, icon, and package names match the intended public repo
