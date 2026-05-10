@@ -10,72 +10,10 @@
   <Support>https://github.com/JSONbored/yourapp-aio/issues</Support>
   <Project>https://github.com/JSONbored/yourapp-aio</Project>
   <Overview>Replace this overview with the real app description and first-run guidance.</Overview>
-  <Changes>### 2026-05-05&#xD;
+  <Changes>### 2026-05-10&#xD;
 - Generated from CHANGELOG.md during release preparation. Do not edit manually.&#xD;
-- Harden apt package installs&#xD;
-- Gate publishes on template tests and CI&#xD;
-- Optimize pytest gating and Trunk uploads&#xD;
-- Simplify template workflow defaults&#xD;
-- Simplify template workflow graph&#xD;
-- Replace blocked sync action&#xD;
-- Skip unsupported dependency review&#xD;
-- Install template validation deps&#xD;
-- Capture integration diagnostics on pytest failure&#xD;
-- Remove automation flag and align release flow&#xD;
-- Standardize fleet tool configuration&#xD;
-- Consume shared fleet plugin config&#xD;
-- Pin releases to target commits&#xD;
-- Consolidate pytest workflow steps&#xD;
-- Use shared AIO workflows (#21)&#xD;
-- Pin shared validation policy&#xD;
-- Use shared AIO workflows&#xD;
-- Sync workflow path filters&#xD;
-- Sync catalog publication state&#xD;
-- Pin publish helper workflow fix&#xD;
-- Pin Docker Hub primary workflow&#xD;
-- Pin control-plane workflow foundation&#xD;
-- Update pytest and trunk analytics uploader&#xD;
-- Update non-major infrastructure updates&#xD;
-- Add repository guidance&#xD;
-- Document central app test dependencies&#xD;
-- Add git-cliff release workflow&#xD;
-- Align fleet scaffold with current standards&#xD;
-- Support suite components&#xD;
-- Expose manual publish targets&#xD;
-- Tighten changelog spacing&#xD;
-- Make releases manual and gate heavy workflows&#xD;
-- Harden manual publish workflow&#xD;
-- Make derived repo validator portable&#xD;
-- Use workflow file selector for CI checks&#xD;
-- Classify local action changes&#xD;
-- Fail fast on init errors&#xD;
-- Avoid template-only integration runs&#xD;
-- Sync shared validation and trunk cleanup&#xD;
-- Sync release shim path fallback&#xD;
-- Prefer Docker Hub image metadata&#xD;
-- Sync shared repository boilerplate&#xD;
-- Move shared automation to aio-fleet&#xD;
-- Declare aio-fleet ownership&#xD;
-- Initialize reusable Unraid AIO template&#xD;
-- Refine public template docs and checklists&#xD;
-- Harden template workflows, upstream tracking, and maintenance policy&#xD;
-- Standardize template community defaults&#xD;
-- Consolidate CI workflows&#xD;
-- Fix awesome-unraid sync for protected main&#xD;
-- Simplify template sync defaults&#xD;
-- Merge branch 'main' into codex/template-rollup&#xD;
-- Merge branch 'main' into codex/fix-awesome-unraid-sync-prs&#xD;
-- Add Unraid support thread template&#xD;
-- Merge branch 'main' into codex/add-support-thread-template&#xD;
-- Switch template CI to pytest and integration tests&#xD;
-- Harden template CI, runtime, and XML tooling&#xD;
-- Merge branch 'main' into codex/release-target-immutability&#xD;
-- Use shared derived repo validation&#xD;
-- Use shared release helper shim&#xD;
-- Remove legacy shared contract tests&#xD;
-- Use docker volumes for runtime persistence&#xD;
-- Cover action and container contracts&#xD;
-- Use shared runtime contract helpers</Changes>
+- Bound starter app connections&#xD;
+- Format starter app regression test</Changes>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/yourapp-aio.xml</TemplateURL>
