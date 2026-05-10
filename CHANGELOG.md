@@ -1,17 +1,22 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
 ## v0.1.1 - 2026-05-10
+
 ### Fixes
+
 - Bound starter app connections
 - Format starter app regression test
 
 ## v0.1.0 - 2026-05-05
+
 ### Build
+
 - Harden apt package installs
 
-
 ### CI
+
 - Gate publishes on template tests and CI
 - Optimize pytest gating and Trunk uploads
 - Simplify template workflow defaults
@@ -34,25 +39,25 @@ All notable changes to this project will be documented in this file.
 - Pin Docker Hub primary workflow
 - Pin control-plane workflow foundation
 
-
 ### Dependency Updates
+
 - Update pytest and trunk analytics uploader
 - Update non-major infrastructure updates
 
-
 ### Documentation
+
 - Add repository guidance
 - Document central app test dependencies
 
-
 ### Features
+
 - Add git-cliff release workflow
 - Align fleet scaffold with current standards
 - Support suite components
 - Expose manual publish targets
 
-
 ### Fixes
+
 - Tighten changelog spacing
 - Make releases manual and gate heavy workflows
 - Harden manual publish workflow
@@ -65,14 +70,14 @@ All notable changes to this project will be documented in this file.
 - Sync release shim path fallback
 - Prefer Docker Hub image metadata
 
-
 ### Maintenance
+
 - Sync shared repository boilerplate
 - Move shared automation to aio-fleet
 - Declare aio-fleet ownership
 
-
 ### Other Changes
+
 - Initialize reusable Unraid AIO template
 - Refine public template docs and checklists
 - Harden template workflows, upstream tracking, and maintenance policy
@@ -88,14 +93,14 @@ All notable changes to this project will be documented in this file.
 - Harden template CI, runtime, and XML tooling
 - Merge branch 'main' into codex/release-target-immutability
 
-
 ### Refactors
+
 - Use shared derived repo validation
 - Use shared release helper shim
 - Remove legacy shared contract tests
 
-
 ### Tests
+
 - Use docker volumes for runtime persistence
 - Cover action and container contracts
 - Use shared runtime contract helpers
