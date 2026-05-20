@@ -20,6 +20,7 @@
 - confirm the `aio-fleet` GitHub App is installed on this repo and `awesome-unraid`
 - confirm shared dependency/upstream automation is represented in `aio-fleet`
 - verify branch protection and secret scanning are enabled
+- from `aio-fleet`, run `python -m aio_fleet signing doctor --repo <repo> --format json`
 - confirm `aio-fleet / required` passes before allowing publish
 
 ## Before Unraid Submission

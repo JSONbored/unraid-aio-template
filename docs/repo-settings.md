@@ -56,10 +56,13 @@ Suggested required checks:
 
 App repos should not carry repo-local workflow secrets for shared automation. Configure the GitHub App, Docker Hub credentials, and GHCR token in `aio-fleet`; keep app-local secrets only when the runtime itself needs them.
 
+Generated fleet commits should come from the Fleetbot GitHub App path, not from a machine-user PAT. If a derived repo ever needs a repo-local generated PR writer, it must create a GitHub App token, enable verified bot signing, and fail when generated PR commits are not verified.
+
 ## Maintenance
 
 - keep shared dependency and upstream policy in `aio-fleet`
 - let `aio-fleet` own shared workflow, Trunk, and upstream automation
+- run `python -m aio_fleet signing doctor --repo <repo> --format json` before merging generated fleet work or enabling publish automation
 - review generated automation PRs manually before merging
 
 ## Derived Repo Checks Before Enabling Automation

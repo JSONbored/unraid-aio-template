@@ -11,13 +11,13 @@ This template is opinionated on purpose. It is built for repos that should be:
 
 ## What This Template Ships With
 
-- starter [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile) for wrapping an upstream image with `s6-overlay`
-- starter CA XML at [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
-- shared pytest harness under [`tests/`](/tmp/unraid-aio-template/tests)
-- declarative fleet manifest at [`.aio-fleet.yml`](/tmp/unraid-aio-template/.aio-fleet.yml)
+- starter [`Dockerfile`](Dockerfile) for wrapping an upstream image with `s6-overlay`
+- starter CA XML at [`template-aio.xml`](template-aio.xml)
+- shared pytest harness under [`tests/`](tests)
+- declarative fleet manifest at [`.aio-fleet.yml`](.aio-fleet.yml)
 - app-owned Docker/rootfs/XML/docs/tests only; shared validation, release, registry, catalog, upstream, and Trunk behavior lives in `aio-fleet`
 - starter docs, changelog, funding, issue templates, and security policy
-- public repo checklists under [`docs/`](/tmp/unraid-aio-template/docs)
+- public repo checklists under [`docs/`](docs)
 
 ## Design Principles
 
@@ -34,16 +34,16 @@ This template is opinionated on purpose. It is built for repos that should be:
 1. Create a new private repo from this template.
 2. Rename `template-aio.xml` to the final app slug, for example `myapp-aio.xml`.
 3. Replace placeholders in the Dockerfile, XML, rootfs scripts, pytest harness, README, funding file, and security policy.
-4. Replace [`assets/app-icon.png`](/tmp/unraid-aio-template/assets/app-icon.png) with the real icon.
-5. Follow [`docs/customization-guide.md`](/tmp/unraid-aio-template/docs/customization-guide.md).
-6. Follow [`docs/repo-settings.md`](/tmp/unraid-aio-template/docs/repo-settings.md).
+4. Replace [`assets/app-icon.png`](assets/app-icon.png) with the real icon.
+5. Follow [`docs/customization-guide.md`](docs/customization-guide.md).
+6. Follow [`docs/repo-settings.md`](docs/repo-settings.md).
 7. Add the repo to `aio-fleet/fleet.yml`, then export the app manifest with `python -m aio_fleet export-app-manifest --repo <repo> --write`.
 8. Let `aio-fleet` own package publishing, downstream XML sync PRs, upstream monitoring, release preparation, and Trunk.
 9. Keep the XML `<Changes>` block in the fleet-standard date-first format generated from `aio-fleet`.
 
 For ecosystems that need companion images such as agents, workers, or proxies,
 use the optional suite component pattern in
-[`docs/suite-components.md`](/tmp/unraid-aio-template/docs/suite-components.md).
+[`docs/suite-components.md`](docs/suite-components.md).
 Most repos should still stay single-component unless the companion is tightly
 bound to the same upstream product and support surface.
 
@@ -61,16 +61,16 @@ The final app repo surface should stay narrow:
 
 ## Files To Customize First
 
-- [`Dockerfile`](/tmp/unraid-aio-template/Dockerfile)
-- [`template-aio.xml`](/tmp/unraid-aio-template/template-aio.xml)
-- [`pyproject.toml`](/tmp/unraid-aio-template/pyproject.toml)
-- [`tests/`](/tmp/unraid-aio-template/tests/)
-- [`rootfs/etc/cont-init.d/01-bootstrap.sh`](/tmp/unraid-aio-template/rootfs/etc/cont-init.d/01-bootstrap.sh)
-- [`rootfs/etc/services.d/app/run`](/tmp/unraid-aio-template/rootfs/etc/services.d/app/run)
-- [`README.md`](/tmp/unraid-aio-template/README.md)
-- [`.github/FUNDING.yml`](/tmp/unraid-aio-template/.github/FUNDING.yml)
-- [`SECURITY.md`](/tmp/unraid-aio-template/SECURITY.md)
-- [`.aio-fleet.yml`](/tmp/unraid-aio-template/.aio-fleet.yml)
+- [`Dockerfile`](Dockerfile)
+- [`template-aio.xml`](template-aio.xml)
+- [`pyproject.toml`](pyproject.toml)
+- [`tests/`](tests/)
+- [`rootfs/etc/cont-init.d/01-bootstrap.sh`](rootfs/etc/cont-init.d/01-bootstrap.sh)
+- [`rootfs/etc/services.d/app/run`](rootfs/etc/services.d/app/run)
+- [`README.md`](README.md)
+- [`.github/FUNDING.yml`](.github/FUNDING.yml)
+- [`SECURITY.md`](SECURITY.md)
+- [`.aio-fleet.yml`](.aio-fleet.yml)
 
 ## Validation Flow
 
@@ -91,17 +91,17 @@ Control-plane cost model for derived repos:
 - require `aio-fleet / required` before protected-branch merges
 - keep local integration runs explicit instead of binding them to every pre-commit or pre-push hook by default
 
-Use [`docs/release-checklist.md`](/tmp/unraid-aio-template/docs/release-checklist.md) before making a derived repo public or submitting it to CA.
+Use [`docs/release-checklist.md`](docs/release-checklist.md) before making a derived repo public or submitting it to CA.
 
 ## Upstream Tracking
 
-Use [`docs/upstream-tracking.md`](/tmp/unraid-aio-template/docs/upstream-tracking.md) to wire the derived repo to the stable upstream app it wraps.
+Use [`docs/upstream-tracking.md`](docs/upstream-tracking.md) to wire the derived repo to the stable upstream app it wraps.
 
 ## Releases
 
 This template should use normal semver releases such as `v0.1.0`, not upstream-aligned app versions.
 
-See [`docs/releases.md`](/tmp/unraid-aio-template/docs/releases.md) for the protected-branch-safe release workflow and changelog process.
+See [`docs/releases.md`](docs/releases.md) for the protected-branch-safe release workflow and changelog process.
 
 ## Star History
 
