@@ -10,10 +10,9 @@
   <Support>https://github.com/JSONbored/yourapp-aio/issues</Support>
   <Project>https://github.com/JSONbored/yourapp-aio</Project>
   <Overview>Replace this overview with the real app description and first-run guidance.</Overview>
-  <Changes>### 2026-05-10&#xD;
+  <Changes>### 2026-05-20&#xD;
 - Generated from CHANGELOG.md during release preparation. Do not edit manually.&#xD;
-- Bound starter app connections&#xD;
-- Format starter app regression test</Changes>
+- Document Fleetbot commit verification</Changes>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/yourapp-aio.xml</TemplateURL>
