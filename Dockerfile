@@ -2,37 +2,27 @@
 # checkov:skip=CKV_DOCKER_3: s6-overlay requires root init so cont-init scripts can prepare state before services drop privileges
 # checkov:skip=CKV_DOCKER_8: s6-overlay entrypoint must start as root so init scripts can prepare filesystem state before dropping privileges
 
-# Replace this starter base with the real upstream image once the derived repo is wired.
-FROM python:3.14-slim-bookworm@sha256:2e256d0381371566ed96980584957ed31297f437569b79b0e5f7e17f2720e53a
+FROM jsonbored/aio-base:s6-3.2.1.0@sha256:07db479a01a95ba28480b4605f5d1cc8bedb574b77cf167ee46e29b9558fee90 AS aio-base
 
-ARG S6_OVERLAY_VERSION=3.2.1.0
-ARG TARGETARCH
+# Replace this starter runtime with the real upstream image once the derived repo is wired.
+FROM python:3.14-slim-bookworm@sha256:2e256d0381371566ed96980584957ed31297f437569b79b0e5f7e17f2720e53a
 
 # hadolint ignore=DL3002
 USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN find /etc/apt -type f \( -name '*.list' -o -name '*.sources' \) -exec sed -i 's|http://|https://|g' {} + && \
-    printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' > /etc/apt/apt.conf.d/80-retries && \
+COPY --from=aio-base /aio-overlay/ /
+
+RUN aio-harden pre && \
     apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates="$(apt-cache madison ca-certificates | awk 'NR==1 {print $3}')" \
     curl="$(apt-cache madison curl | awk 'NR==1 {print $3}')" \
-    openssl="$(apt-cache madison openssl | awk 'NR==1 {print $3}')" \
-    xz-utils="$(apt-cache madison xz-utils | awk 'NR==1 {print $3}')" && \
-    curl -L -o /tmp/s6-overlay-noarch.tar.xz "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" && \
-    tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
-    case "${TARGETARCH}" in \
-      amd64) s6_arch="x86_64" ;; \
-      arm64) s6_arch="aarch64" ;; \
-      *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
-    esac && \
-    curl -L -o /tmp/s6-overlay-arch.tar.xz "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${s6_arch}.tar.xz" && \
-    tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
+    openssl="$(apt-cache madison openssl | awk 'NR==1 {print $3}')" && \
     groupadd --system appuser && \
     useradd --system --gid appuser --create-home --home-dir /home/appuser --shell /usr/sbin/nologin appuser && \
     mkdir -p /config /data /run/service-app && \
     chown -R appuser:appuser /run/service-app && \
-    rm -rf /tmp/* /var/lib/apt/lists/*
+    aio-harden post
 
 COPY rootfs/ /
 
