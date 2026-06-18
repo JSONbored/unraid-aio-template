@@ -10,4 +10,5 @@ def test_dockerfile_consumes_shared_aio_base_overlay() -> None:
     assert "COPY --from=aio-base /aio-overlay/ /" in dockerfile  # nosec B101
     assert "aio-harden pre" in dockerfile  # nosec B101
     assert "aio-harden post" in dockerfile  # nosec B101
+    assert "apt-get install" not in dockerfile  # nosec B101
     assert "s6-overlay/releases/download" not in dockerfile  # nosec B101
