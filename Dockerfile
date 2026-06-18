@@ -14,10 +14,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY --from=aio-base /aio-overlay/ /
 
 RUN aio-harden pre && \
-    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates="$(apt-cache madison ca-certificates | awk 'NR==1 {print $3}')" \
-    curl="$(apt-cache madison curl | awk 'NR==1 {print $3}')" \
-    openssl="$(apt-cache madison openssl | awk 'NR==1 {print $3}')" && \
     groupadd --system appuser && \
     useradd --system --gid appuser --create-home --home-dir /home/appuser --shell /usr/sbin/nologin appuser && \
     mkdir -p /config /data /run/service-app && \
@@ -38,6 +34,6 @@ ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=300000
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -fsS http://localhost:8080/health >/dev/null || exit 1
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=5).read()" || exit 1
 
 ENTRYPOINT ["/init"]

@@ -21,7 +21,7 @@ persist_if_missing() {
 
 # Replace these with any first-run secrets your app needs.
 if [[ -z ${APP_SECRET_KEY-} ]]; then
-	generated_secret="$(openssl rand -hex 64)"
+	generated_secret="$(python -c 'import secrets; print(secrets.token_hex(64))')"
 	persist_if_missing "APP_SECRET_KEY" "${generated_secret}"
 fi
 
