@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.1.3 - 2026-06-18
+
+### Build
+
+- Consume shared aio-base overlay
+
+### Fixes
+
+- Remove starter apt dependency
+
 ## v0.1.2 - 2026-05-20
 
 ### Documentation
