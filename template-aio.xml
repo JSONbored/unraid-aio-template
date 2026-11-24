@@ -10,10 +10,9 @@
   <Support>https://github.com/JSONbored/yourapp-aio/issues</Support>
   <Project>https://github.com/JSONbored/yourapp-aio</Project>
   <Overview>Replace this overview with the real app description and first-run guidance.</Overview>
-  <Changes>### 2026-06-18&#xD;
+  <Changes>### 2026-11-24&#xD;
 - Generated from CHANGELOG.md during release preparation. Do not edit manually.&#xD;
-- Consume shared aio-base overlay&#xD;
-- Remove starter apt dependency</Changes>
+- Refresh the pinned Python 3.14 Bookworm starter runtime</Changes>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/JSONbored/awesome-unraid/main/yourapp-aio.xml</TemplateURL>

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.1.4 - 2026-11-24
+
+### Build
+
+- Refresh the pinned Python 3.14 Bookworm starter runtime
+
 ## v0.1.3 - 2026-06-18
 
 ### Build
